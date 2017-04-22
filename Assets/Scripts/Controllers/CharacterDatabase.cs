@@ -114,13 +114,12 @@ public class CharacterDatabase : MonoBehaviour
 
     public string GetRelationText(int relation)
     {
-        if (relation == -1) return "Strangers";
+        if (relation == 0) return "Strangers";
 
         if (relation == 5) return "Splendid!";
         if (relation == 4) return "Good";
-        if (relation == 3) return "Ok";
-        if (relation == 2) return "Annoyed";
-        if (relation == 1) return "Dislike";
+        if (relation == 3) return "Neutral";
+        if (relation == 2) return "Dislike";
         return "Hate";
     }
 }

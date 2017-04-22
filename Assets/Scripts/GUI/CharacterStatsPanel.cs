@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,15 +12,21 @@ public class CharacterStatsPanel : MonoBehaviour
     {
         MainController.I.onCharacterSelected += OpenPanel;
         MainController.I.onCharacterDeselected += ClosePanel;
+        MainController.I.onGameOver += OnGameover;
 
         panel.SetActive(false);
+    }
+
+    private void OnGameover()
+    {
+        ClosePanel(null);
     }
 
     private void OpenPanel(CharacterView node)
     {
         panel.SetActive(true);
 
-        buttonsPanel.SetActive(node.relationToPlayer != -1);
+        buttonsPanel.SetActive(node.relationToPlayer != 0);
 
         if (node.data.isPlayer)
         {
@@ -79,5 +84,4 @@ public class CharacterStatsPanel : MonoBehaviour
 
         return ParseArray(array);
     }
-
 }

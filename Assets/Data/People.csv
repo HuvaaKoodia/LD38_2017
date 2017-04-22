@@ -1,9 +1,9 @@
 People;;;;;;
-ID;Name;Job;Hobbies;Personality;Schedule;Relation to player (0 to 5, -1 == strangers)
-id_player;Player;Unemployed;;obsessive, compulsive;;-1
+ID;Name;Job;Hobbies;Personality;Schedule;Relation to player (1 to 5, 0 == strangers)
+id_player;Player;Unemployed;;obsessive, compulsive;;0
 id_marcus;Marcus;Mechanic;Running;approachable, dishonest;Working 9-17;5
 id_sarah;Sarah;Nurse;Reading;helpful, caring;3-shift work;4
 id_tim;Tim;Publisher;Badminton;friendly;Almost always free;3
-id_steve;Steve;Manager;Running;busy, efficient;always working;-1
-id_pat;Pat;Author;;unapproachable;Writes a book almost all the time;-1
-id_celeb;Oné Becy;Celebrity;;nice;Conserts, Practice;-1
+id_steve;Steve;Manager;Running;busy, efficient;always working;0
+id_pat;Pat;Author;;unapproachable;Writes a book almost all the time;0
+id_celeb;Oné Becy;Celebrity;;nice;Conserts, Practice;0

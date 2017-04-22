@@ -18,10 +18,16 @@ public class CharacterView : MonoBehaviour
 
     //character stats
     public CharacterData data { get; private set; }
-    public int relationToPlayer { get;private set;}
+    public int relationToPlayer { get; private set; }
 
-    public void ChangeRelation(int change) {
-        relationToPlayer += change;
+    public void ChangeRelation(int change)
+    {
+        SetRelation(relationToPlayer + change);
+    }
+
+    public void SetRelation(int relation)
+    {
+        relationToPlayer = relation;
         relationToPlayer = Mathf.Clamp(relationToPlayer, 0, 5);
     }
 
@@ -74,7 +80,7 @@ public class CharacterView : MonoBehaviour
 
             //connect to other node automatically so the line isn't created a new.
             //if (!connection.connections.Contains(this)) {
-             //   connection.connections.Add(this);
+            //   connection.connections.Add(this);
             //}
 
             connection.lines.Add(lineView);
@@ -82,14 +88,22 @@ public class CharacterView : MonoBehaviour
         }
     }
 
+    public bool AcceptTourRequestFrom(CharacterView playerCharacter)
+    {
+        return true;
+        //return Helpers.RandBool();
+    }
+
     public bool AcceptPartyRequestFrom(CharacterView character)
     {
-        return Helpers.RandBool();
+        return true;
+        //return Helpers.RandBool();
     }
 
     public bool AcceptMeetingRequestFrom(CharacterView character)
     {
-        return Helpers.RandBool();
+        return true;
+        //return Helpers.RandBool();
     }
 
     #endregion
@@ -101,7 +115,7 @@ public class CharacterView : MonoBehaviour
     {
         return linesTable.ContainsKey(currentPlanet);
     }
-    
+
     public LineView GetLine(CharacterView planet)
     {
         return linesTable[planet];
@@ -117,7 +131,7 @@ public class CharacterView : MonoBehaviour
 
     #endregion
     #region private interface
-    
+
     #endregion
     #region events
     public override string ToString()

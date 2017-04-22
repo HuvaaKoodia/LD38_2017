@@ -21,6 +21,17 @@ public class DiscussionSystem : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+
+        //join tour
+        if (character.connections.Count == 0) //quick hack
+        {
+            var button = Instantiate(buttonPrefab, buttonsParent);
+            button.GetComponentInChildren<Text>().text = "Can I join the tour, plz?";
+            button.onButtonPressedEvent += OnTourButtonPressed;
+            button.gameObject.SetActive(true);
+            button.character = character;
+        }
+
         //parties?
         {
             var button = Instantiate(buttonPrefab, buttonsParent);
@@ -50,18 +61,42 @@ public class DiscussionSystem : MonoBehaviour
         }
     }
 
+    private void OnTourButtonPressed(CharacterView node)
+    {
+        if (MainController.I.selectedCharacter.AcceptTourRequestFrom(MainController.I.playerCharacter))
+        {
+            print("Sure.. You look stable enough..");
+            MainController.I.SetOnTour();
+        }
+        else
+        {
+            print("Take you to the tour? I think not! Begone foul shade! (Relation--)");
+            MainController.I.selectedCharacter.ChangeRelation(-2);
+        }
+
+        DiscussionEnd();
+    }
+
     private void OnChatButtonPressed(CharacterView character)
     {
         print("You chat a bunch. (Relation+)");
         MainController.I.selectedCharacter.ChangeRelation(1);
-        buttonPanel.gameObject.SetActive(false);
+
+        DiscussionEnd();
     }
 
     private void OnMeetingButtonPressed(CharacterView meetingWith)
     {
         if (MainController.I.selectedCharacter.AcceptMeetingRequestFrom(MainController.I.playerCharacter))
         {
-            print("Sure let's meet at ....");
+            var meeting = MainController.I.FindMeeting(MainController.I.selectedCharacter, meetingWith);
+            if (meeting != null)
+            {
+                print("Sure, join us on day " + meeting.day);
+                MainController.I.AddKnownEvent(meeting);
+            }
+            else
+                print("Sure.. Aww, I'm not meeting " + meetingWith.data.name + " anytime soon. Sorry to get your hopes up.");
         }
         else
         {
@@ -69,20 +104,34 @@ public class DiscussionSystem : MonoBehaviour
             MainController.I.selectedCharacter.ChangeRelation(-1);
         }
 
-        buttonPanel.gameObject.SetActive(false);
+        DiscussionEnd();
     }
 
     void OnPartiesButtonPressed(CharacterView character)
     {
         if (MainController.I.selectedCharacter.AcceptPartyRequestFrom(MainController.I.playerCharacter))
         {
-            print("Yes there's a party at ...");
+            var meeting = MainController.I.FindParty(MainController.I.selectedCharacter);
+            if (meeting != null)
+            {
+                print("Sure, join us on day " + meeting.day);
+                MainController.I.AddKnownEvent(meeting);
+            }
+            else
+                print("Don't know of any upcoming parties, sorry.");
         }
         else
         {
-            print("Don't know of any upcoming parties, sorry.");
+            print("Naaahhhhhhhhhhh, not for youuuuu. (Relation-)");
+            MainController.I.selectedCharacter.ChangeRelation(-1);
         }
 
+        DiscussionEnd();
+    }
+
+    private void DiscussionEnd()
+    {
         buttonPanel.gameObject.SetActive(false);
+        MainController.I.CheckDayEnd();
     }
 }
