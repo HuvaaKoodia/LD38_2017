@@ -118,10 +118,19 @@ public static class Helpers
 	}
     
     //strings
-	public static string[] Split(string str, string separator)
+	public static string[] Split(string str, string separator, bool removeEmpty = true, bool trimEntries = false)
 	{
-		return str.Split(new string[] { separator }, System.StringSplitOptions.RemoveEmptyEntries);
-	}
+        var split = str.Split(new string[] { separator }, removeEmpty ? System.StringSplitOptions.RemoveEmptyEntries : System.StringSplitOptions.None);
+
+        if (trimEntries) {
+            for (int i = 0; i < split.Length; i++)
+            {
+                split[i] = split[i].Trim();
+            }
+        }
+
+        return split;
+    }
 
     //distance
 	public static float DistanceSquared(Vector2 pos1, Vector2 pos2)

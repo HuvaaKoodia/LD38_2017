@@ -1,30 +1,44 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using Vectrosity;
+using System;
 
-public delegate void NodeViewEvent(NodeView node);
+public delegate void CharacterEvent(CharacterView node);
 
-public class NodeView : MonoBehaviour
+public class CharacterView : MonoBehaviour
 {
     #region variables
-    public Transform graphicsParent;
-    public Transform entityParent;
-    public List<NodeView> connections;
+    public string characterId = "id_player";
+    public List<CharacterView> connections;
     public Color lineColor;
     public List<LineView> lines { get; private set; }
-    private Dictionary<NodeView, LineView> linesTable;
-    private SpriteRenderer mainSprite;
+    private Dictionary<CharacterView, LineView> linesTable;
+    public Transform graphicsParent;
+    public Transform entityParent;
+
+    //character stats
+    public CharacterData data { get; private set; }
+    public int relationToPlayer { get;private set;}
+
+    public void ChangeRelation(int change) {
+        relationToPlayer += change;
+        relationToPlayer = Mathf.Clamp(relationToPlayer, 0, 5);
+    }
 
     #endregion
     #region initialization
     private void Awake()
     {
         lines = new List<LineView>();
-        linesTable = new Dictionary<NodeView, LineView>();
+        linesTable = new Dictionary<CharacterView, LineView>();
     }
 
     private void Start()
     {
+        //load character
+        data = CharacterDatabase.I.charactersTable[characterId];
+        relationToPlayer = data.relation;
+
         //create lines
         foreach (var connection in connections)
         {
@@ -33,10 +47,9 @@ public class NodeView : MonoBehaviour
             var direction = (connection.transform.position - transform.position).normalized;
             float targetDistance = 0.3f;
 
-
             float worldHeight = Camera.main.orthographicSize * 2;
             float pixelsPerUnit = Camera.main.pixelHeight / worldHeight;
-            float lineWidth = 0.4f * pixelsPerUnit;
+            float lineWidth = 0.2f * pixelsPerUnit;
 
             var line = new VectorLine("Line",
                 new List<Vector3>() {
@@ -60,13 +73,23 @@ public class NodeView : MonoBehaviour
             linesTable.Add(connection, lineView);
 
             //connect to other node automatically so the line isn't created a new.
-            if (!connection.connections.Contains(this)) {
-                connection.connections.Add(this);
-            }
+            //if (!connection.connections.Contains(this)) {
+             //   connection.connections.Add(this);
+            //}
 
             connection.lines.Add(lineView);
             connection.linesTable.Add(this, lineView);
         }
+    }
+
+    public bool AcceptPartyRequestFrom(CharacterView character)
+    {
+        return Helpers.RandBool();
+    }
+
+    public bool AcceptMeetingRequestFrom(CharacterView character)
+    {
+        return Helpers.RandBool();
     }
 
     #endregion
@@ -74,17 +97,17 @@ public class NodeView : MonoBehaviour
     #endregion
     #region public interface
 
-    public bool ConnectedTo(NodeView currentPlanet)
+    public bool ConnectedTo(CharacterView currentPlanet)
     {
         return linesTable.ContainsKey(currentPlanet);
     }
     
-    public LineView GetLine(NodeView planet)
+    public LineView GetLine(CharacterView planet)
     {
         return linesTable[planet];
     }
 
-    public void ResetLine(NodeView planet)
+    public void ResetLine(CharacterView planet)
     {
         if (linesTable.ContainsKey(planet))
         {
