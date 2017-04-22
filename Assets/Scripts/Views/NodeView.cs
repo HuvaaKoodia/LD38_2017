@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Vectrosity;
 
-public delegate void NodeViewEvent(NodeView planet);
+public delegate void NodeViewEvent(NodeView node);
 
 public class NodeView : MonoBehaviour
 {

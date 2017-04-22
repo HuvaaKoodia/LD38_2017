@@ -244,4 +244,30 @@ public static class Helpers
     {
         Debug.DrawRay(ray.origin, ray.direction, color);
     }
+
+    public static bool ScreenPointToWorldPoint(out Vector3 worldPos, int layerMask)
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit info;
+        if (Physics.Raycast(ray, out info, 50, layerMask))
+        {
+            worldPos = info.point;
+            return true;
+        }
+        worldPos = Vector3.zero;
+        return false;
+    }
+
+    public static bool ScreenPointToObject<T>(out T obj, int layerMask)
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit info;
+        if (Physics.Raycast(ray, out info, 50, layerMask))
+        {
+            obj = info.transform.GetComponentInParent<T>();
+            return true;
+        }
+        obj = default(T);
+        return false;
+    }
 }
