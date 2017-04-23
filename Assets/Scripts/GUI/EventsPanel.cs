@@ -26,7 +26,6 @@ public class EventsPanel : MonoBehaviour
         eventLabel.SetEvent(e);
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(eventsParent.parent as RectTransform);
-
     }
 
     private void EventRemoved(Event e)
@@ -43,5 +42,7 @@ public class EventsPanel : MonoBehaviour
 
         if (eventsParent.childCount - destroyed == 0)
             panel.SetActive(false);
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(eventsParent.parent as RectTransform);
     }
 }

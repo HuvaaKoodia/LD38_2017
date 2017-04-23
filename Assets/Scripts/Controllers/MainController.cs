@@ -16,29 +16,57 @@ public enum EventType
 public class Event
 {
     public string Name;
+    public string discussionDescription = "";
     public int day;
     public EventType eventType { get; set; }
 
-    public CharacterView[] participants;
+    public List<CharacterView> participants;
+
+    public string GetParticipantsList(bool useAnd)
+    {
+        return GetCharacterList(participants, useAnd);
+    }
+
+    public static string GetCharacterList(List<CharacterView> list, bool useAnd)
+    {
+        var temp = "";
+        for (int i = 0; i < list.Count; i++)
+        {
+            temp += list[i].data.name;
+            if (i < list.Count - 1)
+            {
+                if (useAnd && i == list.Count - 2)
+                    temp += " and ";
+                else
+                    temp += ", ";
+            }
+        }
+
+        return temp;
+    }
+
 }
 
 public class MainController : MonoBehaviour
 {
+
+
     public static MainController I;
 
     public CharacterView playerCharacter;
     public List<CharacterView> otherCharacters { get; private set; }
     public CharacterView selectedCharacter { get; private set; }
     public event CharacterEvent onCharacterSelected, onCharacterDeselected;
-    public event EventEvent onKnownEventAdded, onKnownEventRemoved;
-    public event Delegates.Action onGameOver, onActionUsed, onDayStart;
+    public event EventEvent onKnownEventAdded, onKnownEventRemoved, onEventAttended;
+    public event Delegates.Action onGameOver, onActionUsed, onDayStart, onDayEnd;
     public int daysLeft = 10;
     public int day { get; private set; }
     public void SetOnTour() {
         onTour = true;
     }
 
-    private bool onTour = false;
+    public bool onTour { get; private set; }
+    public bool GameOver { get { return gameOver; } }
 
     public int actionPointsPerDay = 3;
     public List<Event> meetings, parties;
@@ -58,6 +86,7 @@ public class MainController : MonoBehaviour
         meetings.Sort((x, y) => x.day - y.day);
         parties.Sort((x, y) => x.day - y.day);
         day = 1;
+        onTour = false;
     }
 
     public void ReduceActionPoints(int value)
@@ -79,7 +108,8 @@ public class MainController : MonoBehaviour
 
         disableInput = true;
         yield return null;
-        DayStart();
+
+        onDayEnd();
     }
 
     private void Update()
@@ -125,7 +155,7 @@ public class MainController : MonoBehaviour
 
     public Event FindMeeting(CharacterView character, CharacterView character2)
     {
-        var ev = meetings.Where(e => e.participants.Contains(character) && e.participants.Contains(character2));
+        var ev = meetings.Where(e => !knownEvents.Contains(e) && e.participants.Contains(character) && e.participants.Contains(character2));
         if (ev.Count() > 0)
             return ev.First();
         return null;
@@ -162,7 +192,7 @@ public class MainController : MonoBehaviour
                 return true;
             }
 
-            DayStart();
+            onDayEnd();
         }
 
         return false;
@@ -218,7 +248,7 @@ public class MainController : MonoBehaviour
         }
     }
 
-    private void DayStart()
+    public void DayStart()
     {
         actionPoints = actionPointsPerDay;
 
@@ -231,14 +261,15 @@ public class MainController : MonoBehaviour
             {
                 var e = events[i];
                 if (e.day > day) continue;
-                print(string.Format("Went to {0}", e.Name));
+                //print(string.Format("Went to {0}", e.Name));
                 actionPoints--;
+                onEventAttended(e);
 
                 foreach (var p in e.participants)
                 {
                     if (p.relationToPlayer == 0)
                     {
-                        print(string.Format("Got to know {0} at {1}", p.data.name, e.Name));
+                        //print(string.Format("Got to know {0} at {1}", p.data.name, e.Name));
                         p.SetRelation(3);
                     }
                 }

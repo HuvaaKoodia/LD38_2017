@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -37,10 +38,49 @@ public class DiscussionController : MonoBehaviour
         waitButton.onClick.AddListener(onWaitButtonPressed);
 
         MainController.I.onDayStart += CheckWaitButton;
+        MainController.I.onDayEnd += OnDayEnd;
         MainController.I.onActionUsed += CheckWaitButton;
+        MainController.I.onEventAttended += onEventAttended;
     }
 
-    
+    private void onEventAttended(Event e)
+    {
+        indexDiscussion = 0;
+
+        var description = e.discussionDescription;
+        if (description == "") description = e.Name;
+
+        string text1 = "I went to " + description.Trim() + " with " + e.GetParticipantsList(true) + ".";
+        string text2 = "";
+
+        var newPeople = new List<CharacterView>();
+
+        foreach (var p in e.participants)
+        {
+            if (p.relationToPlayer == 0)
+            {
+                newPeople.Add(p);
+            }
+        }
+
+        if (newPeople.Count > 0)
+            text2 = "\n" + "I met "+ Event.GetCharacterList(newPeople, true) + " for the first time.\nSeems I made a good first impression.";
+
+        string text3 = Helpers.Rand(new string[] {
+            "It was quite an event! You wouldn't believe half the things that went on, so I won't bother divulging any.",
+            "It was quite a bit of fun, that!",
+            "Would go again, although the food was lacking."
+            }
+        );
+        text3 = "\n\n" + text3;
+
+        continueButton.gameObject.SetActive(true);
+        onDiscussionStart();
+        MovePlayerToDiscussionPosition();
+        PlayerTalk(text1 + text2 + text3);
+    }
+
+    bool hackBBC = false;
     #region public interface
     public void CallSelectedCharacter()
     {
@@ -66,14 +106,30 @@ public class DiscussionController : MonoBehaviour
 
         if (!answeredCall)
         {
+            onDiscussionStart();
             PlayerTalk("No answer for some reason...\n\nI should try again tomorrow.");
+            MovePlayerToDiscussionPosition();
             continueButton.gameObject.SetActive(true);
             indexDiscussion = 2;
         }
         else
         {   //discussion
             MoveCharactersToDiscussionPositions();
-            PlayerTalk("Hello! It's been a while.");
+
+            hackBBC = false;
+            if (Helpers.RandPercent() < 25)
+            {
+                hackBBC = true;
+                PlayerTalk("Long time no see");
+            }
+            else
+            {
+                PlayerTalk(
+                    "Hello! It's been a while.",
+                    "Good day to you, my \"dearest friend\".",
+                    "Hi to you fine madam/sir!"
+                    );
+            }
             onDiscussionStart();
             MainController.I.ReduceActionPoints(1);
             indexDiscussion = 0;
@@ -230,7 +286,7 @@ public class DiscussionController : MonoBehaviour
             var meeting = MainController.I.FindMeeting(otherCharacter, meetingWith);
             if (meeting != null)
             {
-                OtherTalk("Sure, join us on day " + meeting.day);
+                OtherTalk("Sure, join "+meeting.discussionDescription.Trim()+" on " + MainController.GetDayName(meeting.day));
                 MainController.I.AddKnownEvent(meeting);
             }
             else
@@ -266,9 +322,9 @@ public class DiscussionController : MonoBehaviour
             }
             else
                 OtherTalk(
-                    "I Don't know of any upcoming parties, sorry.", 
+                    "I don't know of any upcoming parties, sorry.", 
                     "I haven't been invited to any parties.\nYou don't happen to know of any?",
-                    "Sorry no. There was a fun one just a few days ago...\nGood food, quality entertainment; we had the time of our lives!\n\nEh.. too bad you weren't invited.",
+                    "Sorry no.\n\n There was a fun one just a few days ago...\nGood food, quality entertainment; we had the time of our lives!\n\nEh.. too bad you weren't invited.",
                     "They don't tell me these things no-more.\nI used to be cool, you know."
                     );
         }
@@ -335,7 +391,10 @@ public class DiscussionController : MonoBehaviour
     {
         if (indexDiscussion == 0)
         {
-            OtherTalk("Hi");
+            if (hackBBC) 
+                OtherTalk("Long time no BBC.");
+            else
+                OtherTalk("Hi!", "Hello!", "Huldo!");
         }
         if (indexDiscussion == 1)
         {
@@ -365,8 +424,14 @@ public class DiscussionController : MonoBehaviour
     private void onWaitButtonPressed()
     {
         waitButton.gameObject.SetActive(false);
-        MainController.I.ReduceActionPoints(-100);
+        MainController.I.ReduceActionPoints(100);
         MainController.I.CheckDayEnd();
+    }
+
+
+    private void OnDayEnd()
+    {
+        waitButton.gameObject.SetActive(false);
     }
 
     private void CheckWaitButton()

@@ -14,8 +14,14 @@ public class CharacterStatsPanel : MonoBehaviour
         MainController.I.onCharacterSelected += OpenPanel;
         MainController.I.onCharacterDeselected += ClosePanel;
         MainController.I.onGameOver += OnGameover;
+        MainController.I.onDayEnd += OnDayEnd;
 
         panel.SetActive(false);
+    }
+
+    private void OnDayEnd()
+    {
+        ClosePanel(null);
     }
 
     private void OnGameover()
@@ -35,8 +41,8 @@ public class CharacterStatsPanel : MonoBehaviour
     private void ClosePanel(CharacterView character)
     {
         panel.SetActive(false);
-        if (character != null )
-        character.onStatsChanged -= UpdateCharacterStats;
+        if (character != null)
+            character.onStatsChanged -= UpdateCharacterStats;
     }
 
     private void UpdateCharacterStats(CharacterView character)

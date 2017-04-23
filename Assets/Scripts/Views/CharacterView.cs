@@ -30,7 +30,7 @@ public class CharacterView : MonoBehaviour
     public void SetRelation(int relation)
     {
         relationToPlayer = relation;
-        relationToPlayer = Mathf.Clamp(relationToPlayer, 0, 5);
+        relationToPlayer = Mathf.Clamp(relationToPlayer, 1, 5);
 
         if (onStatsChanged!= null) onStatsChanged(this);
     }
@@ -105,7 +105,6 @@ public class CharacterView : MonoBehaviour
     public bool AcceptTourRequestFrom(CharacterView playerCharacter)
     {
         return Helpers.RandFloat() < relationToPlayer / 5f;
-        //return Helpers.RandBool();
     }
 
     public bool AcceptPartyRequestFrom(CharacterView character)
@@ -115,7 +114,6 @@ public class CharacterView : MonoBehaviour
         if (data.HasTrait(PersonalityTrait.dishonest)) relation -= 1;
 
         return Helpers.RandFloat() < relation / 5f;
-        //return Helpers.RandBool();
     }
 
     public bool AcceptMeetingRequestFrom(CharacterView character)
@@ -125,7 +123,7 @@ public class CharacterView : MonoBehaviour
         if (data.HasTrait(PersonalityTrait.dishonest)) relation -= 1;
 
         return Helpers.RandFloat() < relation / 5f;
-        //return Helpers.RandBool();
+ 
     }
 
     #endregion
