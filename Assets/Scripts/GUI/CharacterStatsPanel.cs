@@ -35,6 +35,7 @@ public class CharacterStatsPanel : MonoBehaviour
     private void ClosePanel(CharacterView character)
     {
         panel.SetActive(false);
+        if (character != null )
         character.onStatsChanged -= UpdateCharacterStats;
     }
 

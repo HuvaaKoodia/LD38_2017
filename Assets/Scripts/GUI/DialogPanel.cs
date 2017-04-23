@@ -13,8 +13,10 @@ public class DialogPanel : MonoBehaviour {
     private int index = 0;
     public float delayTime = 2;
     private float timer;
+    //public Button continueButton;
 
     public void Show(string name, string text) {
+        gameObject.SetActive(true);
         temp = name + "\n";
         temp2 = text;
         index = 0;
@@ -23,11 +25,12 @@ public class DialogPanel : MonoBehaviour {
 
     public void Hide() {
         textText.text = "";
+        gameObject.SetActive(false);
     }
 	// Use this for initialization
 	void Start () {
-        Show(testName, testText);
-       
+        Hide();
+        
     }
 	
 	// Update is called once per frame
@@ -38,6 +41,8 @@ public class DialogPanel : MonoBehaviour {
             temp = temp + temp2[index];
             index++;
             timer = delayTime;
+//        if (index == temp2.Length) {
+//            continueButton.GetComponent<ContinueControl>().ShowContinue();
         }
     }
 }

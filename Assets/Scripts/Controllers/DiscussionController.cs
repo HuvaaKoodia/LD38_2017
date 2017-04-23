@@ -10,6 +10,9 @@ public class DiscussionController: MonoBehaviour
     public Transform buttonsParent;
     public Transform playerPosition, otherPosition;
     public Delegates.Action onDiscussionStart, onDiscussionEnd;
+    public DialogPanel playerPanel, otherPanel;
+    public Button continueButton;
+    int indexDiscussion = 0;
 
     private CoroutineManager playerMoverCM, otherMoverCM;
 
@@ -22,13 +25,18 @@ public class DiscussionController: MonoBehaviour
     {
         playerMoverCM = new CoroutineManager(this);
         otherMoverCM = new CoroutineManager(this);
+        continueButton.gameObject.SetActive(false);
     }
 
     #region public interface
     public void CallSelectedCharacter()
     {
+
         var selectedCharacter = MainController.I.selectedCharacter;
         int day = MainController.I.day;
+
+        this.playerCharacter = MainController.I.playerCharacter; 
+        this.otherCharacter = MainController.I.selectedCharacter;
 
         //answer call
         int relation = selectedCharacter.relationToPlayer;
@@ -42,17 +50,19 @@ public class DiscussionController: MonoBehaviour
         if (selectedCharacter.IsScheduleFull(day)) answeredCall = false;
         selectedCharacter.SetSchedule(day, true);//only answers one call per day.. tops.
 
-        if (!answeredCall)
-        {
-            print("No answer for some reason... I should try again tomorrow.");
+        if (!answeredCall) {
+            playerPanel.Show(playerCharacter.data.name, "No answer for some reason... I should try again tomorrow.");
+            continueButton.gameObject.SetActive(true);
+            indexDiscussion = 2;
         }
         else
         {   //discussion
-            ShowCallChoice(selectedCharacter);
-            MoveCharactersToDiscussionPositions(MainController.I.playerCharacter, selectedCharacter);
-
+            MoveCharactersToDiscussionPositions();
+            playerPanel.Show(playerCharacter.data.name, "Hello!");
             onDiscussionStart();
             MainController.I.ReduceActionPoints(1);
+            indexDiscussion = 0;
+            continueButton.gameObject.SetActive(true);
         }
     }
 
@@ -70,10 +80,8 @@ public class DiscussionController: MonoBehaviour
     #region private interface
 
     CharacterView playerCharacter, otherCharacter;
-    private void MoveCharactersToDiscussionPositions(CharacterView playerCharacter, CharacterView otherCharacter)
+    private void MoveCharactersToDiscussionPositions()
     {
-        this.playerCharacter = playerCharacter;
-        this.otherCharacter = otherCharacter;
         playerMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(playerCharacter, playerPosition));
         otherMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(otherCharacter, otherPosition));
     }
@@ -103,6 +111,8 @@ public class DiscussionController: MonoBehaviour
 
     private void ShowCallChoice(CharacterView character)
     {
+        playerPanel.Hide();
+        otherPanel.Hide();
         buttonPanel.SetActive(true);
         //creating buttons
         foreach (Transform child in buttonsParent)
@@ -153,24 +163,27 @@ public class DiscussionController: MonoBehaviour
     {
         if (MainController.I.selectedCharacter.AcceptTourRequestFrom(MainController.I.playerCharacter))
         {
-            print("Sure. You look stable enough...");
+            //print("Sure. You look stable enough...");
+            otherPanel.Show(otherCharacter.data.name, "Sure. You look stable enough...");
             MainController.I.SetOnTour();
         }
         else
         {
-            print("Take you to the tour? I think not! Begone foul shade! (Relation--)");
+            //print("Take you to the tour? I think not! Begone foul shade! (Relation--)");
+            otherPanel.Show(otherCharacter.data.name, "Take you to the tour? I think not! Begone foul shade! "/*(Relation--)*/);
             MainController.I.selectedCharacter.ChangeRelation(-2);
         }
-
-        DiscussionEnd();
+        buttonPanel.gameObject.SetActive(false);
+        continueButton.gameObject.SetActive(true);
     }
 
     private void OnChatButtonPressed(CharacterView character)
     {
-        print("You chat a bunch. (Relation+)");
+        //print("You chat a bunch. (Relation+)");
+        otherPanel.Show(otherCharacter.data.name, "You chat a bunch. "/*(Relation+)*/);
         MainController.I.selectedCharacter.ChangeRelation(1);
-
-        DiscussionEnd();
+        buttonPanel.gameObject.SetActive(false);
+        continueButton.gameObject.SetActive(true);
     }
 
     private void OnMeetingButtonPressed(CharacterView meetingWith)
@@ -178,21 +191,25 @@ public class DiscussionController: MonoBehaviour
         if (MainController.I.selectedCharacter.AcceptMeetingRequestFrom(MainController.I.playerCharacter))
         {
             var meeting = MainController.I.FindMeeting(MainController.I.selectedCharacter, meetingWith);
-            if (meeting != null)
-            {
-                print("Sure, join us on day " + meeting.day);
+            if (meeting != null) {
+                //print("Sure, join us on day " + meeting.day);
+                otherPanel.Show(otherCharacter.data.name, "Sure, join us on day " + meeting.day);
                 MainController.I.AddKnownEvent(meeting);
             }
-            else
-                print("Sure.. Aww, I'm not meeting " + meetingWith.data.name + " anytime soon. Sorry to get your hopes up.");
+            else {
+                //print("Sure.. Aww, I'm not meeting " + meetingWith.data.name + " anytime soon. Sorry to get your hopes up.");
+                otherPanel.Show(otherCharacter.data.name, "Sure.. Aww, I'm not meeting " + meetingWith.data.name + " anytime soon. Sorry to get your hopes up.");
+            }
         }
         else
         {
-            print("I'd rather not. (Relation-)");
+            //print("I'd rather not. (Relation-)");
+            otherPanel.Show(otherCharacter.data.name, "I'd rather not. "/*(Relation-)*/);
             MainController.I.selectedCharacter.ChangeRelation(-1);
         }
+        buttonPanel.gameObject.SetActive(false);
+        continueButton.gameObject.SetActive(true);
 
-        DiscussionEnd();
     }
 
     void OnPartiesButtonPressed(CharacterView character)
@@ -200,29 +217,48 @@ public class DiscussionController: MonoBehaviour
         if (MainController.I.selectedCharacter.AcceptPartyRequestFrom(MainController.I.playerCharacter))
         {
             var meeting = MainController.I.FindParty(MainController.I.selectedCharacter);
-            if (meeting != null)
-            {
-                print("Sure, join us on day " + meeting.day);
+            if (meeting != null) {
+                //print("Sure, join us on day " + meeting.day);
+                otherPanel.Show(otherCharacter.data.name, "Sure, join us on day " + meeting.day);
                 MainController.I.AddKnownEvent(meeting);
             }
             else
-                print("Don't know of any upcoming parties, sorry.");
+                //print("Don't know of any upcoming parties, sorry.");
+                otherPanel.Show(otherCharacter.data.name, "Don't know of any upcoming parties, sorry.");
         }
         else
         {
-            print("Naaahhhhhhhhhhh, not for youuuuu. (Relation-)");
+            //print("Naaahhhhhhhhhhh, not for youuuuu. (Relation-)");
+            otherPanel.Show(otherCharacter.data.name, "Naaahhhhhhhhhhh, not for youuuuu. (Relation-)");
             MainController.I.selectedCharacter.ChangeRelation(-1);
         }
+        buttonPanel.gameObject.SetActive(false);
+        continueButton.gameObject.SetActive(true);
+    }
+    public void OnContinueButtonPressed() {
+        if (indexDiscussion == 0) {
+            otherPanel.Show(otherCharacter.data.name, "Hi");
+        }
+        if (indexDiscussion == 1) {
+            ShowCallChoice(otherCharacter);
+            continueButton.gameObject.SetActive(false);
+        }
+        if (indexDiscussion == 2) {
+            DiscussionEnd();
+        }
+        indexDiscussion++;
 
-        DiscussionEnd();
     }
 
     private void DiscussionEnd()
     {
-        buttonPanel.gameObject.SetActive(false);
+
         onDiscussionEnd();
         MoveCharactersToNormalPositions();
         MainController.I.CheckDayEnd();
+        playerPanel.Hide();
+        otherPanel.Hide();
+        continueButton.gameObject.SetActive(false);
     }
     #endregion
 }
