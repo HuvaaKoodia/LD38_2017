@@ -16,7 +16,7 @@ public class EventLabel : MonoBehaviour
             if (i < e.participants.Length - 1) temp += ", ";
         }
 
-        text.text = string.Format("{0}: Day {1}, {2}\n{3}", e.Name ,e.day ,MainController.GetDayName(e.day), temp);
+        text.text = string.Format("{0}\nDay {1}, {2}\n{3}", e.Name ,e.day, MainController.GetDayName(e.day), temp);
 
     }
 }

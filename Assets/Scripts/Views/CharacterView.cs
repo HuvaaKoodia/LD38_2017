@@ -14,11 +14,13 @@ public class CharacterView : MonoBehaviour
     public List<LineView> lines { get; private set; }
     private Dictionary<CharacterView, LineView> linesTable;
     public Transform graphicsParent;
-    public Transform entityParent;
 
     //character stats
+    public bool[] schedule { get; set; }
+
     public CharacterData data { get; private set; }
     public int relationToPlayer { get; private set; }
+    public event CharacterEvent onStatsChanged;
 
     public void ChangeRelation(int change)
     {
@@ -29,6 +31,18 @@ public class CharacterView : MonoBehaviour
     {
         relationToPlayer = relation;
         relationToPlayer = Mathf.Clamp(relationToPlayer, 0, 5);
+
+        if (onStatsChanged!= null) onStatsChanged(this);
+    }
+
+    public bool IsScheduleFull(int dayIndex)
+    {
+        return schedule[dayIndex];
+    }
+
+    public void SetSchedule(int dayIndex, bool full)
+    {
+        schedule[dayIndex - 1] = full;
     }
 
     #endregion
@@ -90,19 +104,27 @@ public class CharacterView : MonoBehaviour
 
     public bool AcceptTourRequestFrom(CharacterView playerCharacter)
     {
-        return true;
+        return Helpers.RandFloat() < relationToPlayer / 5f;
         //return Helpers.RandBool();
     }
 
     public bool AcceptPartyRequestFrom(CharacterView character)
     {
-        return true;
+        int relation = relationToPlayer;
+        if (data.HasTrait(PersonalityTrait.helpful)) relation += 1;
+        if (data.HasTrait(PersonalityTrait.dishonest)) relation -= 1;
+
+        return Helpers.RandFloat() < relation / 5f;
         //return Helpers.RandBool();
     }
 
     public bool AcceptMeetingRequestFrom(CharacterView character)
     {
-        return true;
+        int relation = relationToPlayer;
+        if (data.HasTrait(PersonalityTrait.helpful)) relation += 1;
+        if (data.HasTrait(PersonalityTrait.dishonest)) relation -= 1;
+
+        return Helpers.RandFloat() < relation / 5f;
         //return Helpers.RandBool();
     }
 

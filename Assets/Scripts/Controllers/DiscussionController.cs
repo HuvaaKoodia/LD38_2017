@@ -1,19 +1,107 @@
-﻿using System;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DiscussionSystem : MonoBehaviour
+public class DiscussionController: MonoBehaviour
 {
+    public static DiscussionController I;
     public DiscussionButton buttonPrefab;
     public GameObject buttonPanel;
     public Transform buttonsParent;
+    public Transform playerPosition, otherPosition;
+    public Delegates.Action onDiscussionStart, onDiscussionEnd;
 
-    void Start()
+    private CoroutineManager playerMoverCM, otherMoverCM;
+
+    private void Awake()
     {
-        MainController.I.onCallChoice += OnCallChoice;
+        I = this;
     }
 
-    private void OnCallChoice(CharacterView character)
+    private void Start()
+    {
+        playerMoverCM = new CoroutineManager(this);
+        otherMoverCM = new CoroutineManager(this);
+    }
+
+    #region public interface
+    public void CallSelectedCharacter()
+    {
+        var selectedCharacter = MainController.I.selectedCharacter;
+        int day = MainController.I.day;
+
+        //answer call
+        int relation = selectedCharacter.relationToPlayer;
+
+        if (selectedCharacter.data.HasTrait(PersonalityTrait.approachable)) relation++;
+        if (selectedCharacter.data.HasTrait(PersonalityTrait.friendly)) relation++;
+        if (selectedCharacter.data.HasTrait(PersonalityTrait.busy)) relation--;
+
+        bool answeredCall = Helpers.RandFloat() < relation / 5f;
+
+        if (selectedCharacter.IsScheduleFull(day)) answeredCall = false;
+        selectedCharacter.SetSchedule(day, true);//only answers one call per day.. tops.
+
+        if (!answeredCall)
+        {
+            print("No answer for some reason... I should try again tomorrow.");
+        }
+        else
+        {   //discussion
+            ShowCallChoice(selectedCharacter);
+            MoveCharactersToDiscussionPositions(MainController.I.playerCharacter, selectedCharacter);
+
+            onDiscussionStart();
+            MainController.I.ReduceActionPoints(1);
+        }
+    }
+
+    public void VisitSelectedCharacter()
+    {
+
+    }
+
+    public void MessageSelectedCharacter()
+    {
+
+    }
+    #endregion
+
+    #region private interface
+
+    CharacterView playerCharacter, otherCharacter;
+    private void MoveCharactersToDiscussionPositions(CharacterView playerCharacter, CharacterView otherCharacter)
+    {
+        this.playerCharacter = playerCharacter;
+        this.otherCharacter = otherCharacter;
+        playerMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(playerCharacter, playerPosition));
+        otherMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(otherCharacter, otherPosition));
+    }
+
+    private void MoveCharactersToNormalPositions()
+    {
+        playerMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(playerCharacter, playerCharacter.transform));
+        otherMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(otherCharacter, otherCharacter.transform));
+    }
+
+    private IEnumerator MoveCharacterToDiscussionPositionCoroutine(CharacterView character, Transform target)
+    {
+        float percent = 0;
+        Vector3 startPosition = character.graphicsParent.position;
+        var startRotation = character.graphicsParent.rotation;
+        while (percent < 1)
+        {
+            percent += Time.unscaledDeltaTime * 2f;
+
+            if (percent > 1f) percent = 1f;
+
+            character.graphicsParent.position = Vector3.Lerp(startPosition, target.position, percent);
+            character.graphicsParent.rotation = Quaternion.Lerp(startRotation, target.rotation, percent);
+            yield return null;
+        }
+    }
+
+    private void ShowCallChoice(CharacterView character)
     {
         buttonPanel.SetActive(true);
         //creating buttons
@@ -65,7 +153,7 @@ public class DiscussionSystem : MonoBehaviour
     {
         if (MainController.I.selectedCharacter.AcceptTourRequestFrom(MainController.I.playerCharacter))
         {
-            print("Sure.. You look stable enough..");
+            print("Sure. You look stable enough...");
             MainController.I.SetOnTour();
         }
         else
@@ -132,6 +220,9 @@ public class DiscussionSystem : MonoBehaviour
     private void DiscussionEnd()
     {
         buttonPanel.gameObject.SetActive(false);
+        onDiscussionEnd();
+        MoveCharactersToNormalPositions();
         MainController.I.CheckDayEnd();
     }
+    #endregion
 }
