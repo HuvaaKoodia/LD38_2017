@@ -27,11 +27,11 @@ public class MainController : MonoBehaviour
     public static MainController I;
 
     public CharacterView playerCharacter;
-    private List<CharacterView> otherCharacters;
+    public List<CharacterView> otherCharacters { get; private set; }
     public CharacterView selectedCharacter { get; private set; }
     public event CharacterEvent onCharacterSelected, onCharacterDeselected;
     public event EventEvent onKnownEventAdded, onKnownEventRemoved;
-    public event Delegates.Action onGameOver;
+    public event Delegates.Action onGameOver, onActionUsed, onDayStart;
     public int daysLeft = 10;
     public int day { get; private set; }
     public void SetOnTour() {
@@ -63,6 +63,7 @@ public class MainController : MonoBehaviour
     public void ReduceActionPoints(int value)
     {
         actionPoints -= value;
+        if (onActionUsed != null) onActionUsed();
     }
 
     private IEnumerator Start()
@@ -138,14 +139,14 @@ public class MainController : MonoBehaviour
         return null;
     }
 
-    public void CheckDayEnd()
+    public bool CheckDayEnd()
     {
         if (onTour)
         {
             print("Congratz! You got on the tour! You are almost famous!");
             gameOver = true;
             onGameOver();
-            return;
+            return true;
         }
 
         if (actionPoints <= 0)
@@ -158,11 +159,13 @@ public class MainController : MonoBehaviour
                 print("It is all over now! Your life I mean.");
                 gameOver = true;
                 onGameOver();
-                return;
+                return true;
             }
 
             DayStart();
         }
+
+        return false;
     }
 
     private static string[] dayNames = new string[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
@@ -246,9 +249,11 @@ public class MainController : MonoBehaviour
         RemoveEvents(meetings);
         RemoveEvents(parties);
 
-        CheckDayEnd();
-
-        disableInput = false;
+        if (!CheckDayEnd())
+        {
+            disableInput = false;
+            if (onDayStart != null) onDayStart();
+        }
     }
 
     #endregion

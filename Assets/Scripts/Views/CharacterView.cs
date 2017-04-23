@@ -132,6 +132,10 @@ public class CharacterView : MonoBehaviour
     #region logic
     #endregion
     #region public interface
+    public Animator animator;
+    public void SetTalking(bool talking) {
+        animator.SetBool("Talk", talking);
+    }
 
     public bool ConnectedTo(CharacterView currentPlanet)
     {

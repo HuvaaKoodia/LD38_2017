@@ -12,7 +12,7 @@ public class EventLabel : MonoBehaviour
         var temp = "";
         for (int i = 0; i < e.participants.Length; i++)
         {
-            temp += e.participants[i].name;
+            temp += e.participants[i].data.name;
             if (i < e.participants.Length - 1) temp += ", ";
         }
 

@@ -35,6 +35,7 @@ ModelImporter:
     4300002: Eyes
     7400000: Armature|Idle
     7400002: Armature|Talk
+    7400004: Armature|OpenBeak
     9500000: //RootNode
     13700000: Ankka
     13700002: Eyes
