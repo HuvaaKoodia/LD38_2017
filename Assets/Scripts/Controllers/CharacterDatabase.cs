@@ -27,6 +27,11 @@ public class CharacterData
     public List<PersonalityTrait> personalityTraits;
     public int relation;
     public bool isPlayer;
+
+    public bool HasTrait(PersonalityTrait trait)
+    {
+        return personalityTraits.Contains(trait);
+    }
 }
 
 public class CharacterDatabase : MonoBehaviour
@@ -72,7 +77,7 @@ public class CharacterDatabase : MonoBehaviour
                 }
 
 
-                data.relation = int.Parse(columns[6]);
+                data.relation = int.Parse(columns[5]);
 
                 data.isPlayer = id == "id_player";
                 charactersTable.Add(id, data);

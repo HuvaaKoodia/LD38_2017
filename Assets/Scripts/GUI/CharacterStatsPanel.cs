@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,37 +23,45 @@ public class CharacterStatsPanel : MonoBehaviour
         ClosePanel(null);
     }
 
-    private void OpenPanel(CharacterView node)
+    private void OpenPanel(CharacterView character)
     {
         panel.SetActive(true);
 
-        buttonsPanel.SetActive(node.relationToPlayer != 0);
+        UpdateCharacterStats(character);
 
-        if (node.data.isPlayer)
+        character.onStatsChanged += UpdateCharacterStats;
+    }
+
+    private void ClosePanel(CharacterView character)
+    {
+        panel.SetActive(false);
+        character.onStatsChanged -= UpdateCharacterStats;
+    }
+
+    private void UpdateCharacterStats(CharacterView character)
+    {
+        buttonsPanel.SetActive(character.relationToPlayer != 0);
+
+        if (character.data.isPlayer)
         {
             stats.text = string.Format("Name:\n{0}\n\nJob:\n{1}\n\nHobbies:\n{2}\n\nTraits:\n{3}",
-                node.data.name,
-                node.data.job,
-                ParseArray(node.data.hobbies),
-                ParseList(node.data.personalityTraits)
+                character.data.name,
+                character.data.job,
+                ParseArray(character.data.hobbies),
+                ParseList(character.data.personalityTraits)
             );
         }
         else
         {
 
             stats.text = string.Format("Name:\n{0}\n\nJob:\n{1}\n\nHobbies:\n{2}\n\nTraits:\n{3}\n\nRelation to you:\n{4}",
-                node.data.name,
-                node.data.job,
-                ParseArray(node.data.hobbies),
-                ParseList(node.data.personalityTraits),
-                CharacterDatabase.I.GetRelationText(node.relationToPlayer)
+                character.data.name,
+                character.data.job,
+                ParseArray(character.data.hobbies),
+                ParseList(character.data.personalityTraits),
+                CharacterDatabase.I.GetRelationText(character.relationToPlayer)
             );
         }
-    }
-
-    private void ClosePanel(CharacterView node)
-    {
-        panel.SetActive(false);
     }
 
     public string ParseArray(string[] array)
@@ -79,7 +88,7 @@ public class CharacterStatsPanel : MonoBehaviour
         for (int i = 0; i < array.Length; i++)
         {
             var trait = traits[i];
-            array[i] = Helpers.Rand(CharacterDatabase.I.personalityTexts[(int)trait]);
+            array[i] = CharacterDatabase.I.personalityTexts[(int)trait][0];//Helpers.Rand(CharacterDatabase.I.personalityTexts[(int)trait])
         }
 
         return ParseArray(array);
