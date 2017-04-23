@@ -12,6 +12,8 @@ public class DiscussionController: MonoBehaviour
     public Delegates.Action onDiscussionStart, onDiscussionEnd;
     public DialogPanel playerPanel, otherPanel;
     public Button continueButton;
+    public bool TEST_NoAnswer = false;
+
     int indexDiscussion = 0;
 
     private CoroutineManager playerMoverCM, otherMoverCM;
@@ -19,6 +21,10 @@ public class DiscussionController: MonoBehaviour
     private void Awake()
     {
         I = this;
+
+#if !UNITY_EDITOR
+        TEST_NoAnswer = false;
+#endif
     }
 
     private void Start()
@@ -31,7 +37,6 @@ public class DiscussionController: MonoBehaviour
     #region public interface
     public void CallSelectedCharacter()
     {
-
         var selectedCharacter = MainController.I.selectedCharacter;
         int day = MainController.I.day;
 
@@ -47,10 +52,14 @@ public class DiscussionController: MonoBehaviour
 
         bool answeredCall = Helpers.RandFloat() < relation / 5f;
 
-        if (selectedCharacter.IsScheduleFull(day)) answeredCall = false;
+        if (selectedCharacter.IsScheduleFull(day))
+            answeredCall = false;
         selectedCharacter.SetSchedule(day, true);//only answers one call per day.. tops.
+
+        if (TEST_NoAnswer) answeredCall = false;
+
         if (!answeredCall) {
-            playerPanel.Show(playerCharacter.data.name, "No answer for some reason... I should try again tomorrow.");
+            playerPanel.Show(playerCharacter.data.name, "No answer for some reason...\n\nI should try again tomorrow.");
             continueButton.gameObject.SetActive(true);
             indexDiscussion = 2;
         }

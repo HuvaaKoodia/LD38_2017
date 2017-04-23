@@ -178,7 +178,6 @@ public class MainController : MonoBehaviour
     private void UpdateWeeklySchedules()
     {
         //clear days
-
         for (int i = 0; i < otherCharacters.Count; i++)
         {
             otherCharacters[i].schedule = new bool[7];
@@ -196,8 +195,6 @@ public class MainController : MonoBehaviour
                 }
             }
         }
-
-        int gg = 0;
     }
 
     private void RemoveEvents(List<Event> events)
