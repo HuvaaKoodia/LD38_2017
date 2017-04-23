@@ -49,7 +49,6 @@ public class DiscussionController: MonoBehaviour
 
         if (selectedCharacter.IsScheduleFull(day)) answeredCall = false;
         selectedCharacter.SetSchedule(day, true);//only answers one call per day.. tops.
-
         if (!answeredCall) {
             playerPanel.Show(playerCharacter.data.name, "No answer for some reason... I should try again tomorrow.");
             continueButton.gameObject.SetActive(true);
@@ -192,18 +191,15 @@ public class DiscussionController: MonoBehaviour
         {
             var meeting = MainController.I.FindMeeting(MainController.I.selectedCharacter, meetingWith);
             if (meeting != null) {
-                //print("Sure, join us on day " + meeting.day);
                 otherPanel.Show(otherCharacter.data.name, "Sure, join us on day " + meeting.day);
                 MainController.I.AddKnownEvent(meeting);
             }
             else {
-                //print("Sure.. Aww, I'm not meeting " + meetingWith.data.name + " anytime soon. Sorry to get your hopes up.");
                 otherPanel.Show(otherCharacter.data.name, "Sure.. Aww, I'm not meeting " + meetingWith.data.name + " anytime soon. Sorry to get your hopes up.");
             }
         }
         else
         {
-            //print("I'd rather not. (Relation-)");
             otherPanel.Show(otherCharacter.data.name, "I'd rather not. "/*(Relation-)*/);
             MainController.I.selectedCharacter.ChangeRelation(-1);
         }
@@ -223,7 +219,6 @@ public class DiscussionController: MonoBehaviour
                 MainController.I.AddKnownEvent(meeting);
             }
             else
-                //print("Don't know of any upcoming parties, sorry.");
                 otherPanel.Show(otherCharacter.data.name, "Don't know of any upcoming parties, sorry.");
         }
         else

@@ -37,12 +37,12 @@ public class CharacterView : MonoBehaviour
 
     public bool IsScheduleFull(int dayIndex)
     {
-        return schedule[dayIndex];
+        return schedule[dayIndex % 7];
     }
 
     public void SetSchedule(int dayIndex, bool full)
     {
-        schedule[dayIndex - 1] = full;
+        schedule[(dayIndex - 1) % 7] = full;
     }
 
     #endregion
