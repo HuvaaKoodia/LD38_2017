@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
+  m_IndirectSpecularColor: {r: 0.4465785, g: 0.49641222, b: 0.57481694, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -3131,6 +3131,18 @@ MonoBehaviour:
     participants:
     - {fileID: 1670962191}
     - {fileID: 744167767}
+  - Name: Test Driving New Tesla
+    day: 5
+    participants:
+    - {fileID: 913698637}
+    - {fileID: 2098686161}
+    - {fileID: 1670962191}
+  - Name: Reading circle
+    day: 2
+    participants:
+    - {fileID: 744167767}
+    - {fileID: 1416485377}
+    - {fileID: 913169330}
   parties:
   - Name: Steve's birthday
     day: 7
@@ -3139,7 +3151,7 @@ MonoBehaviour:
     - {fileID: 913698637}
     - {fileID: 744167767}
     - {fileID: 1416485377}
-  - Name: Cake's a plenty
+  - Name: Buy present to Steve
     day: 5
     participants:
     - {fileID: 1416485377}
