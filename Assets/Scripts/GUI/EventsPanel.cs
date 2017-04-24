@@ -9,6 +9,11 @@ public class EventsPanel : MonoBehaviour
     public EventLabel eventPrefab;
     public Transform eventsParent;
 
+    public void ShowEventsHack(bool show)
+    {
+        panel.SetActive(show);
+    }
+
     private void Start()
     {
         MainController.I.onKnownEventAdded += EventAdded;
@@ -30,17 +35,17 @@ public class EventsPanel : MonoBehaviour
 
     private void EventRemoved(Event e)
     {
-        int destroyed = 0;
-        foreach (Transform label in eventsParent)
+        for (int i = 0; i < eventsParent.childCount; i++)
         {
+            var label = eventsParent.GetChild(i);
             if (label.GetComponent<EventLabel>().e == e)
             {
-                Destroy(label.gameObject);
-                destroyed++;
+                DestroyImmediate(label.gameObject);
+                break;
             }
         }
 
-        if (eventsParent.childCount - destroyed == 0)
+        if (eventsParent.childCount == 0)
             panel.SetActive(false);
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(eventsParent.parent as RectTransform);

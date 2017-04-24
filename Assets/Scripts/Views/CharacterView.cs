@@ -10,10 +10,10 @@ public class CharacterView : MonoBehaviour
     #region variables
     public string characterId = "id_player";
     public List<CharacterView> connections;
-    public Color lineColor;
     public List<LineView> lines { get; private set; }
     private Dictionary<CharacterView, LineView> linesTable;
     public Transform graphicsParent;
+    public GameObject selectedSprite, noAnswerSprite;
 
     //character stats
     public bool[] schedule { get; set; }
@@ -51,13 +51,15 @@ public class CharacterView : MonoBehaviour
     {
         lines = new List<LineView>();
         linesTable = new Dictionary<CharacterView, LineView>();
+
+        //load character
+        data = CharacterDatabase.I.charactersTable[characterId];
+        relationToPlayer = data.relation;
     }
 
     private void Start()
     {
-        //load character
-        data = CharacterDatabase.I.charactersTable[characterId];
-        relationToPlayer = data.relation;
+
 
         //create lines
         foreach (var connection in connections)
@@ -77,7 +79,7 @@ public class CharacterView : MonoBehaviour
                     connection.transform.position - direction * targetDistance + Vector3.forward}
                 , lineWidth);
 
-            line.color = lineColor;
+            line.color = MainController.I.lineColors[connection.relationToPlayer];
             line.collider = true;
             line.layer = LayerMasks.LineIndex;
             line.Draw3D();
@@ -100,6 +102,9 @@ public class CharacterView : MonoBehaviour
             connection.lines.Add(lineView);
             connection.linesTable.Add(this, lineView);
         }
+
+        SetSelected(false);
+        SetNoAnswer(false);
     }
 
     public bool AcceptTourRequestFrom(CharacterView playerCharacter)
@@ -123,7 +128,6 @@ public class CharacterView : MonoBehaviour
         if (data.HasTrait(PersonalityTrait.dishonest)) relation -= 1;
 
         return Helpers.RandFloat() < relation / 5f;
- 
     }
 
     #endregion
@@ -131,6 +135,7 @@ public class CharacterView : MonoBehaviour
     #endregion
     #region public interface
     public Animator animator;
+
     public void SetTalking(bool talking) {
         animator.SetBool("Talk", talking);
     }
@@ -145,11 +150,23 @@ public class CharacterView : MonoBehaviour
         return linesTable[planet];
     }
 
-    public void ResetLine(CharacterView planet)
+    public void SetSelected(bool selected)
     {
-        if (linesTable.ContainsKey(planet))
+        selectedSprite.gameObject.SetActive(selected);
+    }
+
+    public void SetNoAnswer(bool noAnswer)
+    {
+        noAnswerSprite.gameObject.SetActive(noAnswer);
+    }
+
+    public void UpdateLineColours() {
+        if (relationToPlayer == 0 && !data.isPlayer) return;
+        foreach (var character in connections)
         {
-            linesTable[planet].vectorLine.color = lineColor;
+            var line = linesTable[character];
+
+            line.vectorLine.color = MainController.I.lineColors[character.relationToPlayer];
         }
     }
 

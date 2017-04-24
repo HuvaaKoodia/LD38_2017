@@ -11,15 +11,18 @@ public class DiscussionController : MonoBehaviour
     public GameObject buttonPanel;
     public Transform buttonsParent;
     public Transform playerPosition, otherPosition;
-    public Delegates.Action onDiscussionStart, onDiscussionEnd;
+    public Delegates.Action onDiscussionStart, onDiscussionEnd, onEventChoiceButtons, onEventChosen;
     public DialogPanel playerPanel, otherPanel;
     public Button continueButton, waitButton, restartButton;
     public bool TEST_NoAnswer = false;
 
+    public EventsPanel eventsPanel;
+
     int actionPointCost = 0;
     int indexDiscussion = 0;
-
+    List<Event> events; 
     private CoroutineManager playerMoverCM, otherMoverCM;
+
 
     private void Awake()
     {
@@ -43,7 +46,7 @@ public class DiscussionController : MonoBehaviour
         MainController.I.onDayStart += CheckWaitButton;
         MainController.I.onDayEnd += OnDayEnd;
         MainController.I.onActionUsed += CheckWaitButton;
-        MainController.I.onEventAttended += onEventAttended;
+        MainController.I.onResolveEvents += onResolveEvents;
         MainController.I.onGameOver += OnGameOver;
 
         playerCharacter = MainController.I.playerCharacter;
@@ -60,40 +63,66 @@ public class DiscussionController : MonoBehaviour
         restartButton.gameObject.SetActive(true);
     }
 
-    private void onEventAttended(Event e)
+    bool eventHack = false;
+
+    private void onResolveEvents(List<Event> events)
     {
-        indexDiscussion = 2;
-
-
-
-        string text1 = "I went to " + e.GetPlayerDescription() + " with " + e.GetParticipantsList(true) + ".";
-        string text2 = "";
-
-        var newPeople = new List<CharacterView>();
-
-        foreach (var p in e.participants)
+        if (events.Count > 1)
         {
-            if (p.relationToPlayer == 0)
-            {
-                newPeople.Add(p);
-            }
+            this.events = events;
+            eventHack = true;
+            indexDiscussion = 0;
+            onDiscussionStart();
+            continueButton.gameObject.SetActive(true);
+            MovePlayerToDiscussionPosition();
+            PlayerTalk(string.Format("Oh noes, I have {0} events on the same day!\nI have to choose one.", events.Count));
+
         }
+        else
+        {
+            var e = events[0];
+            eventHack = false;
 
-        if (newPeople.Count > 0)
-            text2 = "\n" + "I met " + Event.GetCharacterList(newPeople, true) + " for the first time.\nSeems I made a good first impression.";
+            indexDiscussion = 2;
 
-        string text3 = Helpers.Rand(new string[] {
+            string text1 = "I went to " + e.GetPlayerDescription() + " with " + e.GetParticipantsList(true) + ".";
+            string text2 = "";
+
+            var newPeople = new List<CharacterView>();
+
+            foreach (var p in e.participants)
+            {
+                if (p.relationToPlayer == 0)
+                {
+                    newPeople.Add(p);
+                }
+            }
+
+            if (newPeople.Count > 0)
+                text2 = "\n" + "I met " + Event.GetCharacterList(newPeople, true) + " for the first time.\nSeems I made a good first impression.";
+
+            actionPointCost = 1;
+
+            foreach (var p in newPeople)
+            {
+                p.SetRelation(3);
+            }
+
+            string text3 = Helpers.Rand(new string[] {
             "It was quite an event! You wouldn't believe half the things that went on, so I won't bother divulging any.",
             "It was quite a bit of fun, that!",
             "Would go again, although the food was lacking."
             }
-        );
-        text3 = "\n\n" + text3;
+            );
+            text3 = "\n\n" + text3;
 
-        continueButton.gameObject.SetActive(true);
-        onDiscussionStart();
-        MovePlayerToDiscussionPosition();
-        PlayerTalk(text1 + text2 + text3);
+            onDiscussionStart();
+            continueButton.gameObject.SetActive(true);
+            MovePlayerToDiscussionPosition();
+            PlayerTalk(text1 + text2 + text3);
+
+            MainController.I.RemoveDailyEvents();
+        }
     }
 
     bool hackBBC = false;
@@ -129,6 +158,7 @@ public class DiscussionController : MonoBehaviour
             MovePlayerToDiscussionPosition();
             continueButton.gameObject.SetActive(true);
             indexDiscussion = 2;
+            otherCharacter.SetNoAnswer(true);
         }
         else
         {   //discussion
@@ -171,14 +201,14 @@ public class DiscussionController : MonoBehaviour
     CharacterView playerCharacter, otherCharacter;
     private void MoveCharactersToDiscussionPositions()
     {
-        playerMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(playerCharacter, playerPosition));
+        MovePlayerToDiscussionPosition();
         otherMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(otherCharacter, otherPosition));
     }
 
     private void MoveCharactersToNormalPositions()
     {
-        playerMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(playerCharacter, playerCharacter.transform));
-        otherMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(otherCharacter, otherCharacter.transform));
+        MovePlayerToNormalPosition();
+        MoveOtherToNormalPosition();
     }
 
     private void MovePlayerToDiscussionPosition()
@@ -186,7 +216,12 @@ public class DiscussionController : MonoBehaviour
         playerMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(playerCharacter, playerPosition));
     }
 
-    private void MovePlayerToNormalPositions()
+    private void MoveOtherToNormalPosition()
+    {
+        otherMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(otherCharacter, otherCharacter.transform));
+    }
+
+    private void MovePlayerToNormalPosition()
     {
         playerMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(playerCharacter, playerCharacter.transform));
     }
@@ -220,17 +255,20 @@ public class DiscussionController : MonoBehaviour
         }
 
         //join tour
-        bool isCeleb = character.connections.Count == 0;
-        if (isCeleb)//quick hack
+        bool isCeleb = character.connections.Count == 0;//quick hack
+        if (isCeleb)
         {
             var button = Instantiate(buttonPrefab, buttonsParent);
             button.GetComponentInChildren<Text>().text = "Can I join the tour, plz?";
             button.onButtonPressedEvent += OnTourButtonPressed;
             button.gameObject.SetActive(true);
             button.character = character;
+
+
         }
 
         //parties?
+        if (!isCeleb)
         {
             var button = Instantiate(buttonPrefab, buttonsParent);
             button.GetComponentInChildren<Text>().text = "Any parties about?";
@@ -259,7 +297,7 @@ public class DiscussionController : MonoBehaviour
         }
     }
 
-    private void OnTourButtonPressed(CharacterView node)
+    private void OnTourButtonPressed(DiscussionButton button)
     {
         if (otherCharacter.AcceptTourRequestFrom(playerCharacter))
         {
@@ -283,7 +321,7 @@ public class DiscussionController : MonoBehaviour
         continueButton.gameObject.SetActive(true);
     }
 
-    private void OnChatButtonPressed(CharacterView character)
+    private void OnChatButtonPressed(DiscussionButton button)
     {
         OtherTalk(
             "Did you know that water is a rather wet element?\n(Relation +)",
@@ -297,13 +335,16 @@ public class DiscussionController : MonoBehaviour
         continueButton.gameObject.SetActive(true);
     }
 
-    private void OnMeetingButtonPressed(CharacterView meetingWith)
+    private void OnMeetingButtonPressed(DiscussionButton button)
     {
+        CharacterView meetingWith = button.character;
+        
         if (otherCharacter.AcceptMeetingRequestFrom(playerCharacter))
         {
             var meeting = MainController.I.FindMeeting(otherCharacter, meetingWith);
             if (meeting != null)
             {
+                meeting.invitedBy = otherCharacter;
                 OtherTalk("Sure, join " + meeting.GetDescription() + " on " + MainController.GetDayName(meeting.day));
                 MainController.I.AddKnownEvent(meeting);
             }
@@ -328,16 +369,14 @@ public class DiscussionController : MonoBehaviour
 
     }
 
-    void OnPartiesButtonPressed(CharacterView character)
+    void OnPartiesButtonPressed(DiscussionButton button)
     {
-        //OtherTalk("Sorry no.\n\nThere was a fun one just a few days ago...\nGood food, quality entertainment; we had the time of our lives!\n\nEh.. too bad you weren't invited.");
-        //return;
-
         if (otherCharacter.AcceptPartyRequestFrom(playerCharacter))
         {
             var party = MainController.I.FindParty(otherCharacter);
             if (party != null)
             {
+                party.invitedBy = otherCharacter;
                 OtherTalk("Sure, join " + party.GetDescription() + " on " + MainController.GetDayName(party.day));
                 MainController.I.AddKnownEvent(party);
             }
@@ -410,13 +449,36 @@ public class DiscussionController : MonoBehaviour
 
     public void OnContinueButtonPressed()
     {
+        if (eventHack) {
+            if (indexDiscussion == 0) {
+                ShowEventChoices(events);
+                eventsPanel.ShowEventsHack(true);
+            }
+            if (indexDiscussion == 1)
+            {
+                OtherHideDialogue();
+                MoveOtherToNormalPosition();
+                onResolveEvents(events);
+                return;
+            }
+
+            indexDiscussion++;
+            return;
+        }
+
         if (indexDiscussion == 0)
         {
             actionPointCost = 1;
             if (hackBBC)
                 OtherTalk("Long time no BBC.");
             else
-                OtherTalk("Hi!", "Hello!", "Huldo!");
+            {
+                if (otherCharacter.relationToPlayer >= 3)
+                    OtherTalk("Hi!", "Hello!", "Huldo!");
+                else
+                    OtherTalk("Oh, it is you again...", "Well well, isn't it my least favorite duck.", "Speak.");
+
+            }
         }
         if (indexDiscussion == 1)
         {
@@ -430,7 +492,59 @@ public class DiscussionController : MonoBehaviour
             DiscussionEnd();
         }
         indexDiscussion++;
+    }
 
+    private void ShowEventChoices(List<Event> events)
+    {
+        continueButton.gameObject.SetActive(false);
+        PlayerHideDialogue();
+
+        buttonPanel.SetActive(true);
+        //creating buttons
+        foreach (Transform child in buttonsParent)
+        {
+            Destroy(child.gameObject);
+        }
+
+        //meetings?
+        int index = 0;
+        foreach (var e in events)
+        {
+            var button = Instantiate(buttonPrefab, buttonsParent);
+            button.GetComponentInChildren<Text>().text = "Goto " + e.Name;
+            button.onButtonPressedEvent += OnEventButtonPressed;
+            button.gameObject.SetActive(true);
+            button.Index = index;
+            index++;
+        }
+
+        onEventChoiceButtons();
+
+    }
+    
+    private void OnEventButtonPressed(DiscussionButton button)
+    {
+        eventsPanel.ShowEventsHack(false);
+        buttonPanel.gameObject.SetActive(false);
+        var selectedEvent = events[button.Index];
+
+        //someone will be pissed! (only 1 for now, lazy!)
+        events.Remove(selectedEvent);
+
+        otherCharacter = events[0].invitedBy;
+
+        MoveCharactersToDiscussionPositions();
+        otherCharacter.ChangeRelation(-3);
+        OtherTalk(
+            "I invited Ducky over and that dastardly cur is nowhere to be seen?\nI will remember this!\n(relation ---)",
+            "Quandary: Where is Ducky?\nConclusion: That lame duck!\n(relation ---)",
+            "If I invite someone to one of my esteemed events, then they better show up!\n(relation ---)"
+            );
+
+        continueButton.gameObject.SetActive(true);
+        events.Clear();
+        events.Add(selectedEvent);
+        onEventChosen();
     }
 
     private void DiscussionEnd()
@@ -443,6 +557,7 @@ public class DiscussionController : MonoBehaviour
         MainController.I.ReduceActionPoints(actionPointCost);
         MainController.I.CheckDayEnd();
         actionPointCost = 0;
+        eventHack = false;
     }
 
     private void onWaitButtonPressed()
@@ -451,7 +566,6 @@ public class DiscussionController : MonoBehaviour
         MainController.I.ReduceActionPoints(100);
         MainController.I.CheckDayEnd();
     }
-
 
     private void OnDayEnd()
     {

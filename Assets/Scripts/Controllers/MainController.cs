@@ -6,11 +6,11 @@ using UnityEngine;
 
 public delegate void EventEvent(Event e);//LAL!
 
-public enum EventType
+/*public enum EventType
 {
     party,
     meeting
-}
+}*/
 
 [Serializable]
 public class Event
@@ -19,7 +19,8 @@ public class Event
     public string discussionDescription = "";
     public string playerDiscussionDescription = "";
     public int day;
-    public EventType eventType { get; set; }
+    //public EventType eventType { get; set; }
+    public CharacterView invitedBy;
 
     public List<CharacterView> participants;
 
@@ -68,7 +69,7 @@ public class MainController : MonoBehaviour
     public List<CharacterView> otherCharacters { get; private set; }
     public CharacterView selectedCharacter { get; private set; }
     public event CharacterEvent onCharacterSelected, onCharacterDeselected;
-    public event EventEvent onKnownEventAdded, onKnownEventRemoved, onEventAttended;
+    public event EventEvent onKnownEventAdded, onKnownEventRemoved;
     public event Delegates.Action onGameOver, onActionUsed, onDayStart, onDayEnd;
     public int daysLeft = 10;
     public int day { get; private set; }
@@ -84,7 +85,7 @@ public class MainController : MonoBehaviour
     public List<Event> knownEvents { get; private set; }
 
     private bool gameOver = false, disableInput = false;
-    private int actionPoints;
+    public int actionPoints { get; private set; }
 
     private void Awake()
     {
@@ -92,8 +93,8 @@ public class MainController : MonoBehaviour
 
         actionPoints = actionPointsPerDay;
         knownEvents = new List<Event>();
-        meetings.ForEach(e => e.eventType = EventType.meeting);
-        parties.ForEach(e => e.eventType = EventType.party);
+        //meetings.ForEach(e => e.eventType = EventType.meeting);
+        //parties.ForEach(e => e.eventType = EventType.party);
         meetings.Sort((x, y) => x.day - y.day);
         parties.Sort((x, y) => x.day - y.day);
         day = 1;
@@ -104,6 +105,7 @@ public class MainController : MonoBehaviour
     {
         actionPoints -= value;
         if (onActionUsed != null) onActionUsed();
+        UpdateAllLines();
     }
 
     private IEnumerator Start()
@@ -149,29 +151,31 @@ public class MainController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Mouse1))
         {
-            DeselectNode();
+            DeselectCharacter();
         }
 #endif
     }
 
     private void SelectionInput(Vector3 screenPosition)
     {
-        CharacterView node;
-        if (Helpers.ScreenPointToObject(screenPosition, out node, LayerMasks.Character))
+        CharacterView character;
+        if (Helpers.ScreenPointToObject(screenPosition, out character, LayerMasks.Character))
         {
-            DeselectNode();
+            DeselectCharacter();
 
-            selectedCharacter = node;
+            selectedCharacter = character;
+            selectedCharacter.SetSelected(true);
             onCharacterSelected(selectedCharacter);
         }
         else
-            DeselectNode();
+            DeselectCharacter();
     }
 
-    private void DeselectNode()
+    private void DeselectCharacter()
     {
         if (selectedCharacter != null)
         {
+            selectedCharacter.SetSelected(false);
             onCharacterDeselected(selectedCharacter);
         }
     }
@@ -200,6 +204,46 @@ public class MainController : MonoBehaviour
         return null;
     }
 
+    public void DayStart()
+    {
+        actionPoints = actionPointsPerDay;
+
+        if ((day - 1) % 7 == 0)
+            UpdateWeeklySchedules();
+
+        
+            var events = new List<Event>();
+            for (int i = 0; i < knownEvents.Count; i++)
+            {
+                var e = knownEvents[i];
+                if (e.day > day) continue;
+                events.Add(e);
+            }
+            if (events.Count > 0)
+                onResolveEvents(events);
+        
+        if (events.Count == 0)
+            RemoveDailyEvents();
+
+
+        //if (!CheckDayEnd())
+        //{
+        disableInput = false;
+            if (onDayStart != null) onDayStart();
+        //}
+    }
+
+    public Color[] lineColors;
+
+    public void UpdateAllLines() {
+        foreach (var character in otherCharacters)
+        {
+            character.UpdateLineColours();
+        }
+    }
+
+    public EventsEvent onResolveEvents;
+
     public bool CheckDayEnd()
     {
         if (onTour)
@@ -214,6 +258,13 @@ public class MainController : MonoBehaviour
         {
             day++;
             daysLeft--;
+            actionPoints = actionPointsPerDay;
+
+            //clear uncallable icons
+            foreach (var ch in otherCharacters)
+            {
+                ch.SetNoAnswer(false);
+            }
 
             if (daysLeft == 0)
             {
@@ -223,6 +274,7 @@ public class MainController : MonoBehaviour
                 return true;
             }
 
+            DeselectCharacter();
             onDayEnd();
         }
 
@@ -236,7 +288,6 @@ public class MainController : MonoBehaviour
         return dayNames[(day - 1) % 7];
     }
     #endregion
-
     #region private interface
 
     private void UpdateWeeklySchedules()
@@ -261,6 +312,15 @@ public class MainController : MonoBehaviour
         }*/
     }
 
+
+    public void RemoveDailyEvents()
+    {
+        //remove used up events
+        RemoveEvents(meetings);
+        RemoveEvents(parties);
+    }
+
+
     private void RemoveEvents(List<Event> events)
     {
         for (int i = 0; i < events.Count(); i++)
@@ -279,44 +339,7 @@ public class MainController : MonoBehaviour
         }
     }
 
-    public void DayStart()
-    {
-        actionPoints = actionPointsPerDay;
-
-        if ((day - 1) % 7 == 0)
-            UpdateWeeklySchedules();
-
-        {
-            var events = knownEvents;
-            for (int i = 0; i < events.Count; i++)
-            {
-                var e = events[i];
-                if (e.day > day) continue;
-                //print(string.Format("Went to {0}", e.Name));
-                actionPoints--;
-                onEventAttended(e);
-
-                foreach (var p in e.participants)
-                {
-                    if (p.relationToPlayer == 0)
-                    {
-                        //print(string.Format("Got to know {0} at {1}", p.data.name, e.Name));
-                        p.SetRelation(3);
-                    }
-                }
-            }
-        }
-
-        //remove used up events
-        RemoveEvents(meetings);
-        RemoveEvents(parties);
-
-        if (!CheckDayEnd())
-        {
-            disableInput = false;
-            if (onDayStart != null) onDayStart();
-        }
-    }
-
     #endregion
 }
+
+public delegate void EventsEvent(List<Event> events);

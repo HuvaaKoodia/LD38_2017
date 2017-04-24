@@ -1,0 +1,9 @@
+People;;;;;
+ID;Name;Job;Hobbies;Personality;Relation to player (1 to 5, 0 == strangers)
+id_player;Ducky "Duckling" MacDuck;Unemployed;;obsessive, compulsive;0
+id_marcus;Gonan;Mechanic;Running;approachable;5
+id_sarah;Sarah;Nurse;Reading;helpful, caring;5
+id_tim;Tim;Publisher;Badminton;friendly;5
+id_steve;Steve;Manager;Running;busy, efficient;5
+id_pat;Pat;Author;;unapproachable;5
+id_celeb;Oné Becy;Celebrity;;nice;5
