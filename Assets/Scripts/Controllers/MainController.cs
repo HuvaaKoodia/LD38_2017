@@ -20,8 +20,9 @@ public class Event
     public string playerDiscussionDescription = "";
     public int day;
     //public EventType eventType { get; set; }
-    public CharacterView invitedBy;
+    public CharacterView invitedBy { get; set; }
 
+    public AudioSource audiosource;
     public List<CharacterView> participants;
 
     public string GetParticipantsList(bool useAnd)

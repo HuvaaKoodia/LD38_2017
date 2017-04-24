@@ -18,6 +18,7 @@ public class DialogPanel : MonoBehaviour
         temp = name + "\n";
         temp2 = text;
         index = 0;
+        AudioController.I.PlayAudio(AudioController.I.answerSource);
     }
 
     public void Hide()
