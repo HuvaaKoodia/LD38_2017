@@ -15,7 +15,8 @@ public class DayLabel : MonoBehaviour
     private void OnDayEnd()
     {
         text.gameObject.SetActive(true);
-        text.text = "Day " + MainController.I.day; 
+        text.text = "Day " + MainController.I.day;
+        AudioController.I.PlayAudio(AudioController.I.nextDaySource);
     }
 
     public void OnPressed()
