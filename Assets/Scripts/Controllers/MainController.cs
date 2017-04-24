@@ -71,7 +71,7 @@ public class MainController : MonoBehaviour
     public CharacterView selectedCharacter { get; private set; }
     public event CharacterEvent onCharacterSelected, onCharacterDeselected;
     public event EventEvent onKnownEventAdded, onKnownEventRemoved;
-    public event Delegates.Action onGameOver, onActionUsed, onDayStart, onDayEnd;
+    public event Delegates.Action onGameOver, onActionUsed, onDayStart, onDayEnd, onBeforeFirstDay;
     public int daysLeft = 10;
     public int day { get; private set; }
     public void SetOnTour() {
@@ -123,6 +123,10 @@ public class MainController : MonoBehaviour
         disableInput = true;
         yield return null;
 
+        onBeforeFirstDay();
+    }
+
+    public void StartFirstDay() {
         onDayEnd();
     }
 

@@ -15,7 +15,7 @@ public class DialogPanel : MonoBehaviour
     public void Show(string name, string text)
     {
         gameObject.SetActive(true);
-        temp = name + "\n";
+        temp = name + "\n\n";
         temp2 = text;
         index = 0;
         AudioController.I.PlayAudio(AudioController.I.answerSource);

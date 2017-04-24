@@ -3,24 +3,25 @@ using UnityEngine.UI;
 
 public class DayLabel : MonoBehaviour
 {
+    public GameObject panel;
     public Text text;
 
 	void Start ()
     {
         MainController.I.onDayEnd += OnDayEnd;
 
-        text.gameObject.SetActive(false);
+        panel.SetActive(false);
     }
 
     private void OnDayEnd()
     {
-        text.gameObject.SetActive(true);
+        panel.SetActive(true);
         text.text = "Day " + MainController.I.day; 
     }
 
     public void OnPressed()
     {
         MainController.I.DayStart();
-        text.gameObject.SetActive(false);
+        panel.SetActive(false);
     }
 }

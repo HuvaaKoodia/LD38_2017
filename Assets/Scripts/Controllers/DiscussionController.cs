@@ -10,7 +10,7 @@ public class DiscussionController : MonoBehaviour
     public DiscussionButton buttonPrefab;
     public GameObject buttonPanel;
     public Transform buttonsParent;
-    public Transform playerPosition, otherPosition;
+    public Transform playerPosition, otherPosition, playerEndPosition;
     public Delegates.Action onDiscussionStart, onDiscussionEnd, onEventChoiceButtons, onEventChosen;
     public DialogPanel playerPanel, otherPanel;
     public Button continueButton, waitButton, restartButton;
@@ -43,6 +43,7 @@ public class DiscussionController : MonoBehaviour
         waitButton.onClick.AddListener(onWaitButtonPressed);
         restartButton.onClick.AddListener(Helpers.RestartLevel);
 
+        MainController.I.onBeforeFirstDay += ShowIntroDialog;
         MainController.I.onDayStart += CheckWaitButton;
         MainController.I.onDayEnd += OnDayEnd;
         MainController.I.onActionUsed += CheckWaitButton;
@@ -51,10 +52,18 @@ public class DiscussionController : MonoBehaviour
 
         playerCharacter = MainController.I.playerCharacter;
     }
+    bool introHack = true;
+    private void ShowIntroDialog()
+    {
+        onDiscussionStart();
+        continueButton.gameObject.SetActive(true);
+        MovePlayerToDiscussionPosition();
+        PlayerTalk("Hey you, I need help with a thing.\n\nAll my life I've wanted to be famous and done nothing about it. Now a world famed celebrity is starting a world tour in just 7 days, a ticket to the top.\n\nI need you to figure out a way for me talk to them and I'll do the rest. Ok?");
+
+    }
 
     private void OnGameOver()
     {
-        MovePlayerToDiscussionPosition();
         if (MainController.I.onTour) {
             otherPanel.Show("Disembodied voice", "Congratz! Ducky got on the tour!\nBy proxy you are almost famous too!");
             AudioController.I.PlayAudio(AudioController.I.victorySource);
@@ -66,6 +75,8 @@ public class DiscussionController : MonoBehaviour
             playerCharacter.SetState(DuckState.Sad);
         }
         restartButton.gameObject.SetActive(true);
+
+        MovePlayerToEndPosition();
     }
 
     bool eventHack = false;
@@ -219,14 +230,20 @@ public class DiscussionController : MonoBehaviour
             MovePlayerToNormalPosition();
         MoveOtherToNormalPosition();
     }
-
+    
     private void MovePlayerToDiscussionPosition()
     {
         playerMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(playerCharacter, playerPosition));
     }
 
+
+    private void MovePlayerToEndPosition()
+    {
+        playerMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(playerCharacter, playerEndPosition));
+    }
     private void MoveOtherToNormalPosition()
     {
+        if (otherCharacter)
         otherMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(otherCharacter, otherCharacter.transform));
     }
 
@@ -313,7 +330,7 @@ public class DiscussionController : MonoBehaviour
             OtherTalk("Sure. You look stable enough...",
                 "Eh, I don't see why not.",
                 "You do all the menial work and that is a deal.",
-                "I only met you recently and you do seem to have unhealty obsession with fame.\nYou can't be as bad as the last one.\nYou're hired!"
+                "I only met you recently and you do seem to have an unhealty obsession with fame, buuuuuut you can't be as bad as the last one, sooooooo you're hired!"
                 );
             playerCharacter.SetState(DuckState.Happy);
             MainController.I.SetOnTour();
@@ -450,7 +467,7 @@ public class DiscussionController : MonoBehaviour
 
     private void OtherStopTalking()
     {
-        otherCharacter.SetTalking(false);
+        if (otherCharacter) otherCharacter.SetTalking(false);
     }
 
     private void PlayerHideDialogue()
@@ -462,6 +479,7 @@ public class DiscussionController : MonoBehaviour
 
     private void OtherHideDialogue()
     {
+        if (!otherCharacter) return;
         otherPanel.Hide();
         otherCharacter.SetTalking(false);
         otherCharacter.SetState(DuckState.Normal);
@@ -469,6 +487,11 @@ public class DiscussionController : MonoBehaviour
 
     public void OnContinueButtonPressed()
     {
+        if (introHack) {
+            DiscussionEnd();
+            return;
+        }
+
         if (eventHack) {
             if (indexDiscussion == 0) {
                 ShowEventChoices(events);
@@ -574,10 +597,19 @@ public class DiscussionController : MonoBehaviour
         PlayerHideDialogue();
         OtherHideDialogue();
         continueButton.gameObject.SetActive(false);
-        MainController.I.ReduceActionPoints(actionPointCost);
-        MainController.I.CheckDayEnd();
-        actionPointCost = 0;
-        eventHack = false;
+
+        if (introHack)
+        {
+            MainController.I.StartFirstDay();
+            introHack = false;
+        }
+        else
+        {
+            MainController.I.ReduceActionPoints(actionPointCost);
+            MainController.I.CheckDayEnd();
+            actionPointCost = 0;
+            eventHack = false;
+        }
 
         MoveCharactersToNormalPositions();
     }
