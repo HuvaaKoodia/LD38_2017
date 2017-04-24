@@ -70,7 +70,7 @@ public class DiscussionController : MonoBehaviour
             playerCharacter.SetState(DuckState.StarStruck);
         }
         else {
-            otherPanel.Show("Disembodied voice", "It is all over now!\nDucky's hopes and dreams, I mean.");
+            otherPanel.Show("Disembodied voice", "This is the end!\nTo Ducky's hopes and dreams, to be more precise.");
             AudioController.I.PlayAudio(AudioController.I.lifeOverSource);
             playerCharacter.SetState(DuckState.Sad);
             playerCharacter.cryingPS.Play();
@@ -150,8 +150,12 @@ public class DiscussionController : MonoBehaviour
     {
         int day = MainController.I.day;
 
+
+
         playerCharacter = MainController.I.playerCharacter;
         otherCharacter = MainController.I.selectedCharacter;
+
+        MainController.I.DeselectCharacter();
 
         //answer call
         int relation = otherCharacter.relationToPlayer;
@@ -218,7 +222,7 @@ public class DiscussionController : MonoBehaviour
 
     #region private interface
 
-    CharacterView playerCharacter, otherCharacter;
+    public CharacterView playerCharacter, otherCharacter;
     private void MoveCharactersToDiscussionPositions()
     {
         MovePlayerToDiscussionPosition();
@@ -356,9 +360,10 @@ public class DiscussionController : MonoBehaviour
         OtherTalk(
             "Did you know that water is a rather wet element?\n(Relation +)",
             "Half full or half empty? Seriously, this is why I failed psychology.\n(Relation +)",
-            "Everything used to be better back in the day, don't you think?\n\nExcept for Wi-Fi, HD-Video, VR, AR, AC, DC, transcontinental air travel, modern medicine.... toasters.\n(Relation +)",
+            "Everything used to be better back in the day, don't you think?\n\nExcept for Wi-Fi, HD-Video, VR, AR, AC, DC, transcontinental air travel, modern medicine, toasters.\n(Relation +)",
             "Did you hear, they've finally invented a secure IOT toaster.\nWell, it is big news to me at least!\n(Relation +)",
-            "What is on the other side of the pond? I need to know!\n\nWhat do you mean, \"go there\". I can't leave my toaster unguarded!\n(Relation +)"
+            "What is on the other side of the pond? I need to know!\n\nWhat do you mean, \"go there\". I can't leave my toaster unguarded!\n(Relation +)",
+            "Nothing beats the smell of Toasty Toast™ in the morning, the number one brand all across the known world.\n\nYes they pay me to say that.\n(Relation +)"
             );
         otherCharacter.ChangeRelation(1);
         buttonPanel.gameObject.SetActive(false);
@@ -613,6 +618,7 @@ public class DiscussionController : MonoBehaviour
         }
 
         MoveCharactersToNormalPositions();
+        otherCharacter = null;
     }
 
     private void onWaitButtonPressed()

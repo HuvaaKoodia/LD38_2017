@@ -33,7 +33,16 @@ public class CharacterView : MonoBehaviour
     public event CharacterEvent onStatsChanged;
 
     public Renderer[] eyeRenderers;
-    public Material[] eyeMaterials;  
+    public Material[] eyeMaterials;
+
+    public static List<VectorLine> allLinesHack = new List<VectorLine>();
+
+    public static void ShowAllLines(bool show) {
+        foreach (var line in allLinesHack)
+        {
+            line.rectTransform.GetComponent<Renderer>().enabled = show;
+        }
+    }
 
     public void ChangeRelation(int change)
     {
@@ -62,6 +71,7 @@ public class CharacterView : MonoBehaviour
     #region initialization
     private void Awake()
     {
+        allLinesHack.Clear();
         lines = new List<LineView>();
         linesTable = new Dictionary<CharacterView, LineView>();
 
@@ -93,7 +103,10 @@ public class CharacterView : MonoBehaviour
             line.color = MainController.I.lineColors[connection.relationToPlayer];
             line.collider = true;
             line.layer = LayerMasks.LineIndex;
+            
             line.Draw3D();
+            allLinesHack.Add(line);
+
 
             //setup lineView
             var lineView = line.rectTransform.gameObject.AddComponent<LineView>();

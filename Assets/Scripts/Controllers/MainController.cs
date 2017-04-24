@@ -176,7 +176,7 @@ public class MainController : MonoBehaviour
             DeselectCharacter();
     }
 
-    private void DeselectCharacter()
+    public void DeselectCharacter()
     {
         if (selectedCharacter != null)
         {
@@ -253,7 +253,6 @@ public class MainController : MonoBehaviour
     {
         if (onTour)
         {
-            print("Congratz! You got on the tour! You are almost famous!");
             gameOver = true;
             onGameOver();
             return true;
@@ -273,7 +272,6 @@ public class MainController : MonoBehaviour
 
             if (daysLeft == 0)
             {
-                print("It is all over now! Your life I mean.");
                 gameOver = true;
                 onGameOver();
                 return true;
