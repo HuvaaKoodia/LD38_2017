@@ -38,9 +38,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4384984064737494}
   - component: {fileID: 20681157318013100}
-  - component: {fileID: 124015589651557116}
-  - component: {fileID: 92941959656056676}
-  - component: {fileID: 81445843585518304}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -125,7 +122,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 10
   field of view: 60
   orthographic: 1
   orthographic size: 5
@@ -137,27 +134,13 @@ Camera:
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 1
+  m_HDR: 0
+  m_AllowMSAA: 0
   m_ForceIntoRT: 0
-  m_OcclusionCulling: 1
+  m_OcclusionCulling: 0
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
   m_StereoMirrorMode: 0
---- !u!81 &81445843585518304
-AudioListener:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1093452065723172}
-  m_Enabled: 1
---- !u!92 &92941959656056676
-Behaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1093452065723172}
-  m_Enabled: 1
 --- !u!114 &114008585593121444
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -222,13 +205,6 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
---- !u!124 &124015589651557116
-Behaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1093452065723172}
-  m_Enabled: 1
 --- !u!222 &222252877582626204
 CanvasRenderer:
   m_ObjectHideFlags: 1
@@ -245,7 +221,7 @@ Canvas:
   serializedVersion: 3
   m_RenderMode: 1
   m_Camera: {fileID: 20681157318013100}
-  m_PlaneDistance: 100
+  m_PlaneDistance: 5
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
   m_OverrideSorting: 0

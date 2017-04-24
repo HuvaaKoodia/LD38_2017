@@ -1,9 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using Vectrosity;
-using System;
 
 public delegate void CharacterEvent(CharacterView node);
+public enum DuckState
+{
+    Normal = 0,
+    Sad,
+    Angry,
+    Happy,
+    StarStruck
+}
 
 public class CharacterView : MonoBehaviour
 {
@@ -13,6 +20,8 @@ public class CharacterView : MonoBehaviour
     public List<LineView> lines { get; private set; }
     private Dictionary<CharacterView, LineView> linesTable;
     public Transform graphicsParent;
+    public Jitter bodyJitter, eyeJitter;
+    public Rotate[] eyeRotators;
     public GameObject selectedSprite, noAnswerSprite;
 
     //character stats
@@ -21,6 +30,9 @@ public class CharacterView : MonoBehaviour
     public CharacterData data { get; private set; }
     public int relationToPlayer { get; private set; }
     public event CharacterEvent onStatsChanged;
+
+    public Renderer[] eyeRenderers;
+    public Material[] eyeMaterials;  
 
     public void ChangeRelation(int change)
     {
@@ -59,8 +71,6 @@ public class CharacterView : MonoBehaviour
 
     private void Start()
     {
-
-
         //create lines
         foreach (var connection in connections)
         {
@@ -105,6 +115,44 @@ public class CharacterView : MonoBehaviour
 
         SetSelected(false);
         SetNoAnswer(false);
+    }
+
+    DuckState oldState = DuckState.Normal;
+
+    public void SetState(DuckState state)
+    {
+        eyeRenderers[0].material = eyeMaterials[(int)state];
+        eyeRenderers[1].material = eyeMaterials[(int)state];
+
+        if (state == DuckState.Happy)
+        {
+            animator.SetBool("OpenBeak", true);
+            bodyJitter.enabled = true;
+        }
+        if (oldState == DuckState.Happy)
+        {
+            animator.SetBool("OpenBeak", false);
+            bodyJitter.enabled = false;
+        }
+
+        if (state == DuckState.Sad)
+        {
+            eyeJitter.enabled = true;
+        }
+        if (oldState == DuckState.Sad)
+        {
+            eyeJitter.enabled = false;
+        }
+
+        if (state == DuckState.StarStruck)
+        {
+            animator.SetBool("OpenBeak", true);
+            bodyJitter.enabled = true;
+            eyeRotators[0].enabled = true;
+            eyeRotators[1].enabled = true;
+        }
+
+        oldState = state;
     }
 
     public bool AcceptTourRequestFrom(CharacterView playerCharacter)
