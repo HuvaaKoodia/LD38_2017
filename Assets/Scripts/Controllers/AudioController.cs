@@ -22,7 +22,9 @@ public class AudioController : MonoBehaviour {
     public AudioSource messageSource;
     public AudioSource victorySource;
     public AudioSource lifeOverSource;
-
+    public AudioSource waterAmbientSource;
+    public AudioSource nextDaySource;
+    public AudioSource begingSource;
     private void Awake() {
         I = this;
     }
