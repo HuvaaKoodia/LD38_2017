@@ -16,6 +16,7 @@ public class CharacterView : MonoBehaviour
 {
     #region variables
     public string characterId = "id_player";
+    public ParticleSystem cryingPS;
     public List<CharacterView> connections;
     public List<LineView> lines { get; private set; }
     private Dictionary<CharacterView, LineView> linesTable;

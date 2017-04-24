@@ -58,7 +58,7 @@ public class DiscussionController : MonoBehaviour
         onDiscussionStart();
         continueButton.gameObject.SetActive(true);
         MovePlayerToDiscussionPosition();
-        PlayerTalk("Hey you, I need help with a thing.\n\nAll my life I've wanted to be famous and done nothing about it. Now a world famed celebrity is starting a world tour in just 7 days, a ticket to the top.\n\nI need you to figure out a way for me talk to them and I'll do the rest. Ok?");
+        PlayerTalk("Hey you, I need help with a thing.\n\nAll my life I've wanted to be famous and done nothing about it. Now a world famed celebrity is starting a world tour in just 7 days; it's a ticket to the top.\n\nYou find a way for me talk to them and I'll do the rest, ok?");
 
     }
 
@@ -70,9 +70,10 @@ public class DiscussionController : MonoBehaviour
             playerCharacter.SetState(DuckState.StarStruck);
         }
         else {
-            otherPanel.Show("Disembodied voice", "It is all over now!\nDucky's life I mean.");
+            otherPanel.Show("Disembodied voice", "It is all over now!\nDucky's hopes and dreams, I mean.");
             AudioController.I.PlayAudio(AudioController.I.lifeOverSource);
             playerCharacter.SetState(DuckState.Sad);
+            playerCharacter.cryingPS.Play();
         }
         restartButton.gameObject.SetActive(true);
 
