@@ -2846,6 +2846,12 @@ Prefab:
       propertyPath: m_audioClip
       value: 
       objectReference: {fileID: 8300000, guid: d272f963c724f5d4895f7c8486023d0b, type: 3}
+    - target: {fileID: 82458293184258252, guid: 184b196e3582eaa4ea4e7016a41073cb,
+        type: 2}
+      propertyPath: OutputAudioMixerGroup
+      value: 
+      objectReference: {fileID: 243577999310500002, guid: 020defd5982604646ace88bb73693876,
+        type: 2}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 184b196e3582eaa4ea4e7016a41073cb, type: 2}
   m_IsPrefabParent: 0
