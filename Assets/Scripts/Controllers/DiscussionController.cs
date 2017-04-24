@@ -58,10 +58,12 @@ public class DiscussionController : MonoBehaviour
         if (MainController.I.onTour) {
             otherPanel.Show("Disembodied voice", "Congratz! Ducky got on the tour!\nBy proxy you are almost famous too!");
             AudioController.I.PlayAudio(AudioController.I.victorySource);
+            playerCharacter.SetState(DuckState.StarStruck);
         }
         else {
             otherPanel.Show("Disembodied voice", "It is all over now!\nDucky's life I mean.");
             AudioController.I.PlayAudio(AudioController.I.lifeOverSource);
+            playerCharacter.SetState(DuckState.Sad);
         }
         restartButton.gameObject.SetActive(true);
     }
@@ -171,10 +173,10 @@ public class DiscussionController : MonoBehaviour
             MoveCharactersToDiscussionPositions();
 //            AudioController.I.PlayAudio(AudioController.I.answerSource);
             hackBBC = false;
-            if (Helpers.RandPercent() < 15)
+            if (Helpers.RandPercent() < 5)
             {
                 hackBBC = true;
-                PlayerTalk("Long time no see");
+                PlayerTalk("Long time no see.");
             }
             else
             {
@@ -213,7 +215,8 @@ public class DiscussionController : MonoBehaviour
 
     private void MoveCharactersToNormalPositions()
     {
-        MovePlayerToNormalPosition();
+        if(!MainController.I.GameOver)
+            MovePlayerToNormalPosition();
         MoveOtherToNormalPosition();
     }
 
@@ -312,6 +315,7 @@ public class DiscussionController : MonoBehaviour
                 "You do all the menial work and that is a deal.",
                 "I only met you recently and you do seem to have unhealty obsession with fame.\nYou can't be as bad as the last one.\nYou're hired!"
                 );
+            playerCharacter.SetState(DuckState.Happy);
             MainController.I.SetOnTour();
         }
         else
@@ -322,6 +326,8 @@ public class DiscussionController : MonoBehaviour
                 "Ah ha ha ha ha ha ha ha ha ha ha ha ha ha ha oh hee hee ah ha ooh hee ha ha...\nAnd I thought my jokes were bad.\n(Relation --)"
                 );
             otherCharacter.ChangeRelation(-2);
+            otherCharacter.SetState(DuckState.Angry);
+            playerCharacter.SetState(DuckState.Sad);
         }
         buttonPanel.gameObject.SetActive(false);
         continueButton.gameObject.SetActive(true);
@@ -353,6 +359,7 @@ public class DiscussionController : MonoBehaviour
                 meeting.invitedBy = otherCharacter;
                 OtherTalk("Sure, join " + meeting.GetDescription() + " on " + MainController.GetDayName(meeting.day));
                 MainController.I.AddKnownEvent(meeting);
+                playerCharacter.SetState(DuckState.Happy);
             }
             else
             {
@@ -369,6 +376,8 @@ public class DiscussionController : MonoBehaviour
             OtherTalk("I fear that would not be proper.\n(Relation -)");
             OtherTalk("Noooooooooooo *Ahem* ooooooooooooo!.\n(Relation -)");
             otherCharacter.ChangeRelation(-1);
+            otherCharacter.SetState(DuckState.Angry);
+            playerCharacter.SetState(DuckState.Sad);
         }
         buttonPanel.gameObject.SetActive(false);
         continueButton.gameObject.SetActive(true);
@@ -385,6 +394,7 @@ public class DiscussionController : MonoBehaviour
                 party.invitedBy = otherCharacter;
                 OtherTalk("Sure, join " + party.GetDescription() + " on " + MainController.GetDayName(party.day));
                 MainController.I.AddKnownEvent(party);
+                playerCharacter.SetState(DuckState.Happy);
             }
             else
                 OtherTalk(
@@ -402,6 +412,8 @@ public class DiscussionController : MonoBehaviour
                 "Nope, nope, nope.\n(Relation -)"
                 );
             otherCharacter.ChangeRelation(-1);
+            otherCharacter.SetState(DuckState.Angry);
+            playerCharacter.SetState(DuckState.Sad);
         }
         buttonPanel.gameObject.SetActive(false);
         continueButton.gameObject.SetActive(true);
@@ -444,6 +456,7 @@ public class DiscussionController : MonoBehaviour
     private void PlayerHideDialogue()
     {
         playerPanel.Hide();
+        playerCharacter.SetState(DuckState.Normal);
         playerCharacter.SetTalking(false);
     }
 
@@ -451,6 +464,7 @@ public class DiscussionController : MonoBehaviour
     {
         otherPanel.Hide();
         otherCharacter.SetTalking(false);
+        otherCharacter.SetState(DuckState.Normal);
     }
 
     public void OnContinueButtonPressed()
@@ -541,6 +555,7 @@ public class DiscussionController : MonoBehaviour
 
         MoveCharactersToDiscussionPositions();
         otherCharacter.ChangeRelation(-3);
+        otherCharacter.SetState(DuckState.Angry);
         OtherTalk(
             "I invited Ducky over and that dastardly cur is nowhere to be seen?\nI will remember this!\n(relation ---)",
             "Quandary: Where is Ducky?\nConclusion: That lame duck!\n(relation ---)",
@@ -556,7 +571,6 @@ public class DiscussionController : MonoBehaviour
     private void DiscussionEnd()
     {
         onDiscussionEnd();
-        MoveCharactersToNormalPositions();
         PlayerHideDialogue();
         OtherHideDialogue();
         continueButton.gameObject.SetActive(false);
@@ -564,6 +578,8 @@ public class DiscussionController : MonoBehaviour
         MainController.I.CheckDayEnd();
         actionPointCost = 0;
         eventHack = false;
+
+        MoveCharactersToNormalPositions();
     }
 
     private void onWaitButtonPressed()
