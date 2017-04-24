@@ -55,11 +55,14 @@ public class DiscussionController : MonoBehaviour
     private void OnGameOver()
     {
         MovePlayerToDiscussionPosition();
-        if (MainController.I.onTour)
+        if (MainController.I.onTour) {
             otherPanel.Show("Disembodied voice", "Congratz! Ducky got on the tour!\nBy proxy you are almost famous too!");
-        else
+            AudioController.I.PlayAudio(AudioController.I.victorySource);
+        }
+        else {
             otherPanel.Show("Disembodied voice", "It is all over now!\nDucky's life I mean.");
-
+            AudioController.I.PlayAudio(AudioController.I.lifeOverSource);
+        }
         restartButton.gameObject.SetActive(true);
     }
 
@@ -76,6 +79,7 @@ public class DiscussionController : MonoBehaviour
             continueButton.gameObject.SetActive(true);
             MovePlayerToDiscussionPosition();
             PlayerTalk(string.Format("Oh noes, I have {0} events on the same day!\nI have to choose one.", events.Count));
+ //           AudioController.I.PlayAudio(AudioController.I.answerSource);
 
         }
         else
@@ -87,6 +91,7 @@ public class DiscussionController : MonoBehaviour
 
             string text1 = "I went to " + e.GetPlayerDescription() + " with " + e.GetParticipantsList(true) + ".";
             string text2 = "";
+            AudioController.I.PlayAudio(e.audiosource);
 
             var newPeople = new List<CharacterView>();
 
@@ -100,7 +105,7 @@ public class DiscussionController : MonoBehaviour
 
             if (newPeople.Count > 0)
                 text2 = "\n" + "I met " + Event.GetCharacterList(newPeople, true) + " for the first time.\nSeems I made a good first impression.";
-
+//            AudioController.I.PlayAudio(AudioController.I.answerSource);
             actionPointCost = 1;
 
             foreach (var p in newPeople)
@@ -152,7 +157,8 @@ public class DiscussionController : MonoBehaviour
         if (TEST_NoAnswer) answeredCall = false;
 
         if (!answeredCall)
-        {
+        { //No answer
+            AudioController.I.PlayAudio(AudioController.I.noAnswerSource);
             onDiscussionStart();
             PlayerTalk("No answer for some reason...\n\nI should try again tomorrow.");
             MovePlayerToDiscussionPosition();
@@ -161,9 +167,9 @@ public class DiscussionController : MonoBehaviour
             otherCharacter.SetNoAnswer(true);
         }
         else
-        {   //discussion
+        {   //Answer
             MoveCharactersToDiscussionPositions();
-
+//            AudioController.I.PlayAudio(AudioController.I.answerSource);
             hackBBC = false;
             if (Helpers.RandPercent() < 15)
             {
