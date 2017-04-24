@@ -267,9 +267,9 @@ public static class Helpers
         return false;
     }
 
-    public static bool ScreenPointToObject<T>(out T obj, int layerMask)
+    public static bool ScreenPointToObject<T>(Vector3 position, out T obj, int layerMask)
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray ray = Camera.main.ScreenPointToRay(position);
         RaycastHit info;
         if (Physics.Raycast(ray, out info, 50, layerMask))
         {

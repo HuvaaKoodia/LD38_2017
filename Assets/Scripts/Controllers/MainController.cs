@@ -17,6 +17,7 @@ public class Event
 {
     public string Name;
     public string discussionDescription = "";
+    public string playerDiscussionDescription = "";
     public int day;
     public EventType eventType { get; set; }
 
@@ -41,16 +42,26 @@ public class Event
                     temp += ", ";
             }
         }
-
         return temp;
     }
 
+    public string GetDescription()
+    {
+        var description = discussionDescription;
+        if (description == "") description = Name;
+        return description.Trim();
+    }
+
+    public string GetPlayerDescription()
+    {
+        var description = playerDiscussionDescription;
+        if (description == "") description = Name;
+        return description.Trim();
+    }
 }
 
 public class MainController : MonoBehaviour
 {
-
-
     public static MainController I;
 
     public CharacterView playerCharacter;
@@ -114,27 +125,47 @@ public class MainController : MonoBehaviour
 
     private void Update()
     {
-        if (gameOver && disableInput) return;
+        if (gameOver || disableInput) return;
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (Input.touchCount > 0)
+        {
+            var touch = Input.GetTouch(0);
+
+            if (touch.phase == TouchPhase.Began)
+            {
+                //skip if over GUI element
+                if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject(touch.fingerId))
+                    SelectionInput(touch.position);
+            }
+        }
+#else
         if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;//mouse over GUI element
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-            CharacterView node;
-            if (Helpers.ScreenPointToObject(out node, LayerMasks.Character))
-            {
-                DeselectNode();
-
-                selectedCharacter = node;
-                onCharacterSelected(selectedCharacter);
-            }
-            else
-                DeselectNode();
+            SelectionInput(Input.mousePosition);
         }
 
         if (Input.GetKeyDown(KeyCode.Mouse1))
         {
             DeselectNode();
         }
+#endif
+    }
+
+    private void SelectionInput(Vector3 screenPosition)
+    {
+        CharacterView node;
+        if (Helpers.ScreenPointToObject(screenPosition, out node, LayerMasks.Character))
+        {
+            DeselectNode();
+
+            selectedCharacter = node;
+            onCharacterSelected(selectedCharacter);
+        }
+        else
+            DeselectNode();
     }
 
     private void DeselectNode()
@@ -163,7 +194,7 @@ public class MainController : MonoBehaviour
 
     public Event FindParty(CharacterView character)
     {
-        var ev = parties.Where(e => e.participants.Contains(character));
+        var ev = parties.Where(e => !knownEvents.Contains(e) && e.participants.Contains(character));
         if (ev.Count() > 0)
             return ev.First();
         return null;
@@ -184,7 +215,7 @@ public class MainController : MonoBehaviour
             day++;
             daysLeft--;
 
-            if (daysLeft == 1)
+            if (daysLeft == 0)
             {
                 print("It is all over now! Your life I mean.");
                 gameOver = true;
@@ -217,7 +248,7 @@ public class MainController : MonoBehaviour
         }
 
         //set events
-        var events = parties;
+        /*var events = parties;
         for (int i = 0; i < otherCharacters.Count; i++)
         {
             foreach (var e in events)
@@ -227,7 +258,7 @@ public class MainController : MonoBehaviour
                     break;
                 }
             }
-        }
+        }*/
     }
 
     private void RemoveEvents(List<Event> events)

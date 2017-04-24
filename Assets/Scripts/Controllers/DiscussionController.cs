@@ -13,9 +13,10 @@ public class DiscussionController : MonoBehaviour
     public Transform playerPosition, otherPosition;
     public Delegates.Action onDiscussionStart, onDiscussionEnd;
     public DialogPanel playerPanel, otherPanel;
-    public Button continueButton, waitButton;
+    public Button continueButton, waitButton, restartButton;
     public bool TEST_NoAnswer = false;
 
+    int actionPointCost = 0;
     int indexDiscussion = 0;
 
     private CoroutineManager playerMoverCM, otherMoverCM;
@@ -35,22 +36,37 @@ public class DiscussionController : MonoBehaviour
         otherMoverCM = new CoroutineManager(this);
         continueButton.gameObject.SetActive(false);
         waitButton.gameObject.SetActive(false);
+        restartButton.gameObject.SetActive(false);
         waitButton.onClick.AddListener(onWaitButtonPressed);
+        restartButton.onClick.AddListener(Helpers.RestartLevel);
 
         MainController.I.onDayStart += CheckWaitButton;
         MainController.I.onDayEnd += OnDayEnd;
         MainController.I.onActionUsed += CheckWaitButton;
         MainController.I.onEventAttended += onEventAttended;
+        MainController.I.onGameOver += OnGameOver;
+
+        playerCharacter = MainController.I.playerCharacter;
+    }
+
+    private void OnGameOver()
+    {
+        MovePlayerToDiscussionPosition();
+        if (MainController.I.onTour)
+            otherPanel.Show("Disembodied voice", "Congratz! Ducky got on the tour!\nBy proxy you are almost famous too!");
+        else
+            otherPanel.Show("Disembodied voice", "It is all over now!\nDucky's life I mean.");
+
+        restartButton.gameObject.SetActive(true);
     }
 
     private void onEventAttended(Event e)
     {
-        indexDiscussion = 0;
+        indexDiscussion = 2;
 
-        var description = e.discussionDescription;
-        if (description == "") description = e.Name;
 
-        string text1 = "I went to " + description.Trim() + " with " + e.GetParticipantsList(true) + ".";
+
+        string text1 = "I went to " + e.GetPlayerDescription() + " with " + e.GetParticipantsList(true) + ".";
         string text2 = "";
 
         var newPeople = new List<CharacterView>();
@@ -64,7 +80,7 @@ public class DiscussionController : MonoBehaviour
         }
 
         if (newPeople.Count > 0)
-            text2 = "\n" + "I met "+ Event.GetCharacterList(newPeople, true) + " for the first time.\nSeems I made a good first impression.";
+            text2 = "\n" + "I met " + Event.GetCharacterList(newPeople, true) + " for the first time.\nSeems I made a good first impression.";
 
         string text3 = Helpers.Rand(new string[] {
             "It was quite an event! You wouldn't believe half the things that went on, so I won't bother divulging any.",
@@ -94,7 +110,9 @@ public class DiscussionController : MonoBehaviour
 
         if (otherCharacter.data.HasTrait(PersonalityTrait.approachable)) relation++;
         if (otherCharacter.data.HasTrait(PersonalityTrait.friendly)) relation++;
+        if (otherCharacter.data.HasTrait(PersonalityTrait.nice)) relation += 2;
         if (otherCharacter.data.HasTrait(PersonalityTrait.busy)) relation--;
+        if (otherCharacter.data.HasTrait(PersonalityTrait.unapproachable)) relation--;
 
         bool answeredCall = Helpers.RandFloat() < relation / 5f;
 
@@ -117,7 +135,7 @@ public class DiscussionController : MonoBehaviour
             MoveCharactersToDiscussionPositions();
 
             hackBBC = false;
-            if (Helpers.RandPercent() < 25)
+            if (Helpers.RandPercent() < 15)
             {
                 hackBBC = true;
                 PlayerTalk("Long time no see");
@@ -130,8 +148,8 @@ public class DiscussionController : MonoBehaviour
                     "Hi to you fine madam/sir!"
                     );
             }
+
             onDiscussionStart();
-            MainController.I.ReduceActionPoints(1);
             indexDiscussion = 0;
             continueButton.gameObject.SetActive(true);
         }
@@ -271,7 +289,7 @@ public class DiscussionController : MonoBehaviour
             "Did you know that water is a rather wet element?\n(Relation +)",
             "Half full or half empty? Seriously, this is why I failed psychology.\n(Relation +)",
             "Everything used to be better back in the day, don't you think?\n\nExcept for Wi-Fi, HD-Video, VR, AR, AC, DC, transcontinental air travel, modern medicine.... toasters.\n(Relation +)",
-            "Did you hear, they've finally invented a secure IOT toaster.\nWell, it is big news for me at least!\n(Relation +)",
+            "Did you hear, they've finally invented a secure IOT toaster.\nWell, it is big news to me at least!\n(Relation +)",
             "What is on the other side of the pond? I need to know!\n\nWhat do you mean, \"go there\". I can't leave my toaster unguarded!\n(Relation +)"
             );
         otherCharacter.ChangeRelation(1);
@@ -286,7 +304,7 @@ public class DiscussionController : MonoBehaviour
             var meeting = MainController.I.FindMeeting(otherCharacter, meetingWith);
             if (meeting != null)
             {
-                OtherTalk("Sure, join "+meeting.discussionDescription.Trim()+" on " + MainController.GetDayName(meeting.day));
+                OtherTalk("Sure, join " + meeting.GetDescription() + " on " + MainController.GetDayName(meeting.day));
                 MainController.I.AddKnownEvent(meeting);
             }
             else
@@ -312,19 +330,22 @@ public class DiscussionController : MonoBehaviour
 
     void OnPartiesButtonPressed(CharacterView character)
     {
+        //OtherTalk("Sorry no.\n\nThere was a fun one just a few days ago...\nGood food, quality entertainment; we had the time of our lives!\n\nEh.. too bad you weren't invited.");
+        //return;
+
         if (otherCharacter.AcceptPartyRequestFrom(playerCharacter))
         {
-            var meeting = MainController.I.FindParty(otherCharacter);
-            if (meeting != null)
+            var party = MainController.I.FindParty(otherCharacter);
+            if (party != null)
             {
-                OtherTalk("Sure, join us on day " + meeting.day);
-                MainController.I.AddKnownEvent(meeting);
+                OtherTalk("Sure, join " + party.GetDescription() + " on " + MainController.GetDayName(party.day));
+                MainController.I.AddKnownEvent(party);
             }
             else
                 OtherTalk(
-                    "I don't know of any upcoming parties, sorry.", 
+                    "I don't know of any upcoming parties, sorry.",
                     "I haven't been invited to any parties.\nYou don't happen to know of any?",
-                    "Sorry no.\n\n There was a fun one just a few days ago...\nGood food, quality entertainment; we had the time of our lives!\n\nEh.. too bad you weren't invited.",
+                    "Sorry no.\n\nThere was a fun one just a few days ago...\nGood food, quality entertainment; we had the time of our lives!\n\nEh.. too bad you weren't invited.",
                     "They don't tell me these things no-more.\nI used to be cool, you know."
                     );
         }
@@ -391,7 +412,8 @@ public class DiscussionController : MonoBehaviour
     {
         if (indexDiscussion == 0)
         {
-            if (hackBBC) 
+            actionPointCost = 1;
+            if (hackBBC)
                 OtherTalk("Long time no BBC.");
             else
                 OtherTalk("Hi!", "Hello!", "Huldo!");
@@ -415,10 +437,12 @@ public class DiscussionController : MonoBehaviour
     {
         onDiscussionEnd();
         MoveCharactersToNormalPositions();
-        MainController.I.CheckDayEnd();
         PlayerHideDialogue();
         OtherHideDialogue();
         continueButton.gameObject.SetActive(false);
+        MainController.I.ReduceActionPoints(actionPointCost);
+        MainController.I.CheckDayEnd();
+        actionPointCost = 0;
     }
 
     private void onWaitButtonPressed()
@@ -439,7 +463,7 @@ public class DiscussionController : MonoBehaviour
         //check if there are no talkable characters left and show wait button if that is indeed the case
         foreach (var c in MainController.I.otherCharacters)
         {
-            if (c.relationToPlayer != 0 && !c.IsScheduleFull(MainController.I.day))
+            if (c.relationToPlayer > 0 && !c.IsScheduleFull(MainController.I.day))
             {
                 waitButton.gameObject.SetActive(false);
                 return;
