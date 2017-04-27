@@ -8,6 +8,8 @@ public class ShowAndHideMap : MonoBehaviour
         DiscussionController.I.onDiscussionStart += Hide;
         DiscussionController.I.onDiscussionEnd += Show;
         MainController.I.onGameOver += Hide;
+
+        Hide();
     }
 
     private void Hide()

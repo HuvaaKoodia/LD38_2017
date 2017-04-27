@@ -36,8 +36,10 @@ public class CharacterView : MonoBehaviour
     public Material[] eyeMaterials;
 
     public static List<VectorLine> allLinesHack = new List<VectorLine>();
+    public static bool LinesShown = true;
 
     public static void ShowAllLines(bool show) {
+        LinesShown = show;
         foreach (var line in allLinesHack)
         {
             line.rectTransform.GetComponent<Renderer>().enabled = show;

@@ -100,6 +100,16 @@ public class MainController : MonoBehaviour
         parties.Sort((x, y) => x.day - y.day);
         day = 1;
         onTour = false;
+
+        var chars = GameObject.FindGameObjectsWithTag("Character");
+        otherCharacters = new List<CharacterView>();
+        foreach (var c in chars)
+        {
+            var character = c.GetComponent<CharacterView>();
+            otherCharacters.Add(character);
+        }
+        otherCharacters.Remove(playerCharacter);
+
     }
 
     public void ReduceActionPoints(int value)
@@ -111,14 +121,6 @@ public class MainController : MonoBehaviour
 
     private IEnumerator Start()
     {
-        var chars = GameObject.FindGameObjectsWithTag("Character");
-        otherCharacters = new List<CharacterView>();
-        foreach (var c in chars)
-        {
-            var character = c.GetComponent<CharacterView>();
-            otherCharacters.Add(character);
-        }
-        otherCharacters.Remove(playerCharacter);
 
         disableInput = true;
         yield return null;

@@ -226,7 +226,7 @@ public class DiscussionController : MonoBehaviour
     private void MoveCharactersToDiscussionPositions()
     {
         MovePlayerToDiscussionPosition();
-        otherMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(otherCharacter, otherPosition));
+        otherMoverCM.Start(MoveCharacterToPositionCoroutine(otherCharacter, otherPosition));
     }
 
     private void MoveCharactersToNormalPositions()
@@ -238,26 +238,26 @@ public class DiscussionController : MonoBehaviour
     
     private void MovePlayerToDiscussionPosition()
     {
-        playerMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(playerCharacter, playerPosition));
+        playerMoverCM.Start(MoveCharacterToPositionCoroutine(playerCharacter, playerPosition));
     }
 
 
     private void MovePlayerToEndPosition()
     {
-        playerMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(playerCharacter, playerEndPosition));
+        playerMoverCM.Start(MoveCharacterToPositionCoroutine(playerCharacter, playerEndPosition));
     }
     private void MoveOtherToNormalPosition()
     {
         if (otherCharacter)
-        otherMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(otherCharacter, otherCharacter.transform));
+            otherMoverCM.Start(MoveCharacterToPositionCoroutine(otherCharacter, otherCharacter.transform, true));
     }
 
     private void MovePlayerToNormalPosition()
     {
-        playerMoverCM.Start(MoveCharacterToDiscussionPositionCoroutine(playerCharacter, playerCharacter.transform));
+        playerMoverCM.Start(MoveCharacterToPositionCoroutine(playerCharacter, playerCharacter.transform));
     }
 
-    private IEnumerator MoveCharacterToDiscussionPositionCoroutine(CharacterView character, Transform target)
+    private IEnumerator MoveCharacterToPositionCoroutine(CharacterView character, Transform target, bool autoHideCharacter = false)
     {
         float percent = 0;
         Vector3 startPosition = character.graphicsParent.position;
@@ -271,6 +271,10 @@ public class DiscussionController : MonoBehaviour
             character.graphicsParent.position = Vector3.Lerp(startPosition, target.position, percent);
             character.graphicsParent.rotation = Quaternion.Lerp(startRotation, target.rotation, percent);
             yield return null;
+        }
+
+        if (autoHideCharacter && !CharacterView.LinesShown) {
+            character.gameObject.SetActive(false);
         }
     }
 
@@ -585,6 +589,7 @@ public class DiscussionController : MonoBehaviour
         MoveCharactersToDiscussionPositions();
         otherCharacter.ChangeRelation(-3);
         otherCharacter.SetState(DuckState.Angry);
+        otherCharacter.gameObject.SetActive(true);
         OtherTalk(
             "I invited Ducky over and that dastardly cur is nowhere to be seen?\nI will remember this!\n(relation ---)",
             "Quandary: Where is Ducky?\nConclusion: That lame duck!\n(relation ---)",
