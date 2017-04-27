@@ -20,7 +20,7 @@ public class DiscussionController : MonoBehaviour
 
     int actionPointCost = 0;
     int indexDiscussion = 0;
-    List<Event> events; 
+    List<Event> events;
     private CoroutineManager playerMoverCM, otherMoverCM;
 
 
@@ -64,12 +64,14 @@ public class DiscussionController : MonoBehaviour
 
     private void OnGameOver()
     {
-        if (MainController.I.onTour) {
+        if (MainController.I.onTour)
+        {
             otherPanel.Show("Disembodied voice", "Congratz! Ducky got on the tour!\nBy proxy you are almost famous too!");
             AudioController.I.PlayAudio(AudioController.I.victorySource);
             playerCharacter.SetState(DuckState.StarStruck);
         }
-        else {
+        else
+        {
             otherPanel.Show("Disembodied voice", "This is the end!\nTo Ducky's hopes and dreams, to be more precise.");
             AudioController.I.PlayAudio(AudioController.I.lifeOverSource);
             playerCharacter.SetState(DuckState.Sad);
@@ -93,7 +95,7 @@ public class DiscussionController : MonoBehaviour
             continueButton.gameObject.SetActive(true);
             MovePlayerToDiscussionPosition();
             PlayerTalk(string.Format("Oh noes, I have {0} events on the same day!\nI have to choose one.", events.Count));
- //           AudioController.I.PlayAudio(AudioController.I.answerSource);
+            //           AudioController.I.PlayAudio(AudioController.I.answerSource);
 
         }
         else
@@ -119,7 +121,7 @@ public class DiscussionController : MonoBehaviour
 
             if (newPeople.Count > 0)
                 text2 = "\n" + "I met " + Event.GetCharacterList(newPeople, true) + " for the first time.\nSeems I made a good first impression.";
-//            AudioController.I.PlayAudio(AudioController.I.answerSource);
+            //            AudioController.I.PlayAudio(AudioController.I.answerSource);
             actionPointCost = 1;
 
             foreach (var p in newPeople)
@@ -187,7 +189,7 @@ public class DiscussionController : MonoBehaviour
         else
         {   //Answer
             MoveCharactersToDiscussionPositions();
-//            AudioController.I.PlayAudio(AudioController.I.answerSource);
+            //            AudioController.I.PlayAudio(AudioController.I.answerSource);
             hackBBC = false;
             if (Helpers.RandPercent() < 5)
             {
@@ -231,11 +233,11 @@ public class DiscussionController : MonoBehaviour
 
     private void MoveCharactersToNormalPositions()
     {
-        if(!MainController.I.GameOver)
+        if (!MainController.I.GameOver)
             MovePlayerToNormalPosition();
         MoveOtherToNormalPosition();
     }
-    
+
     private void MovePlayerToDiscussionPosition()
     {
         playerMoverCM.Start(MoveCharacterToPositionCoroutine(playerCharacter, playerPosition));
@@ -273,7 +275,8 @@ public class DiscussionController : MonoBehaviour
             yield return null;
         }
 
-        if (autoHideCharacter && !CharacterView.LinesShown) {
+        if (autoHideCharacter && !CharacterView.LinesShown)
+        {
             character.gameObject.SetActive(false);
         }
     }
@@ -377,7 +380,7 @@ public class DiscussionController : MonoBehaviour
     private void OnMeetingButtonPressed(DiscussionButton button)
     {
         CharacterView meetingWith = button.character;
-        
+
         if (otherCharacter.AcceptMeetingRequestFrom(playerCharacter))
         {
             var meeting = MainController.I.FindMeeting(otherCharacter, meetingWith);
@@ -399,9 +402,9 @@ public class DiscussionController : MonoBehaviour
         }
         else
         {
-            OtherTalk("I'd rather not.\n(Relation -)");
-            OtherTalk("I fear that would not be proper.\n(Relation -)");
-            OtherTalk("Noooooooooooo *Ahem* ooooooooooooo!.\n(Relation -)");
+            OtherTalk("I'd rather not.\n(Relation -)",
+                      "I fear that would not be proper.\n(Relation -)",
+                      "Noooooooooooo *Ahem* ooooooooooooo!.\n(Relation -)");
             otherCharacter.ChangeRelation(-1);
             otherCharacter.SetState(DuckState.Angry);
             playerCharacter.SetState(DuckState.Sad);
@@ -497,13 +500,16 @@ public class DiscussionController : MonoBehaviour
 
     public void OnContinueButtonPressed()
     {
-        if (introHack) {
+        if (introHack)
+        {
             DiscussionEnd();
             return;
         }
 
-        if (eventHack) {
-            if (indexDiscussion == 0) {
+        if (eventHack)
+        {
+            if (indexDiscussion == 0)
+            {
                 ShowEventChoices(events);
                 eventsPanel.ShowEventsHack(true);
             }
@@ -574,7 +580,7 @@ public class DiscussionController : MonoBehaviour
         onEventChoiceButtons();
 
     }
-    
+
     private void OnEventButtonPressed(DiscussionButton button)
     {
         eventsPanel.ShowEventsHack(false);
