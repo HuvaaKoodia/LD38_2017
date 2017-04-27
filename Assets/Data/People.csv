@@ -1,9 +1,0 @@
-People;;;;;
-ID;Name;Job;Hobbies;Personality;Relation to player (1 to 5, 0 == strangers)
-id_player;Ducky "Duckling" MacDuck;Unemployed;;obsessive, compulsive;0
-id_marcus;Gonan;Pirate;Running;approachable, dishonest;4
-id_sarah;Sarah;Psychic;Reading;helpful, caring;4
-id_tim;Tim;Freelancer;Kickboxing;friendly;3
-id_steve;Steve;Manager;Running;busy, efficient;0
-id_pat;Pat;Author;;unapproachable;0
-id_celeb;Oné Becy;Celebrity;;nice;0
