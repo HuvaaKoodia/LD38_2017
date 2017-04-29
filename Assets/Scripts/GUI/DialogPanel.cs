@@ -4,43 +4,61 @@ using UnityEngine.UI;
 public class DialogPanel : MonoBehaviour
 {
     public Text textText;
-    public string testName = "Player";
-    public string testText = "Hello";
-    private string temp;
-    private string temp2;
-    private int index = 0;
     public float delayTime = 2;
+    public bool animationOn { get; private set; }
+
+    private string workingString, fullTextString, targetTextString;
+    private int index = 0;
     private float timer;
-
-    public void Show(string name, string text)
-    {
-        gameObject.SetActive(true);
-        temp = name + "\n\n";
-        temp2 = text;
-        index = 0;
-        AudioController.I.PlayAudio(AudioController.I.answerSource);
-    }
-
-    public void Hide()
-    {
-        textText.text = "";
-        gameObject.SetActive(false);
-    }
 
     void Start()
     {
         Hide();
     }
 
+    public void Show(string name, string text)
+    {
+        gameObject.SetActive(true);
+        workingString = name + "\n\n";
+        fullTextString = text;
+        targetTextString = workingString + fullTextString;
+        index = 0;
+        timer = delayTime;
+
+        AudioController.I.PlayAudio(AudioController.I.answerSource);
+        animationOn = true;
+    }
+
+    public void Hide()
+    {
+        textText.text = "";
+        gameObject.SetActive(false);
+        animationOn = false;
+    }
+
+    public void ShowTextNow()
+    {
+        textText.text = targetTextString;
+        animationOn = false;
+    }
+
     void Update()
     {
-        timer -= Time.deltaTime;
-        if (timer < 0 && index < temp2.Length)
+        if (animationOn)
         {
-            textText.text = temp + temp2[index];
-            temp = temp + temp2[index];
-            index++;
-            timer = delayTime;
+            timer -= Time.deltaTime;
+            if (timer < 0)
+            {
+                workingString += fullTextString[index];
+                textText.text = workingString;
+                index++;
+                timer = delayTime;
+
+                if (index == fullTextString.Length)
+                {
+                    animationOn = false;
+                }
+            }
         }
     }
 }

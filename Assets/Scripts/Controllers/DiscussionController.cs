@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,14 +14,12 @@ public class DiscussionController : MonoBehaviour
     public DialogPanel playerPanel, otherPanel;
     public Button continueButton, waitButton, restartButton;
     public bool TEST_NoAnswer = false;
-
     public EventsPanel eventsPanel;
 
     int actionPointCost = 0;
     int indexDiscussion = 0;
     List<Event> events;
     private CoroutineManager playerMoverCM, otherMoverCM;
-
 
     private void Awake()
     {
@@ -58,7 +55,7 @@ public class DiscussionController : MonoBehaviour
         onDiscussionStart();
         continueButton.gameObject.SetActive(true);
         MovePlayerToDiscussionPosition();
-        PlayerTalk("Hey you, I need help with a thing.\n\nAll my life I've wanted to be famous and done nothing about it. Now a world famed celebrity is starting a world tour in just 7 days; it's a ticket to the top.\n\nYou find a way for me talk to them and I'll do the rest, ok?");
+        PlayerTalk("Hey you, I need help with a thing.\n\nAll my life I've wanted to be famous and done nothing about it. Now a world famed celebrity is starting a world tour in just 7 days; it's a ticket to the top.\n\nYou find a way for me to talk to them and I'll do the rest, ok?");
 
     }
 
@@ -370,7 +367,7 @@ public class DiscussionController : MonoBehaviour
             "Everything used to be better back in the day, don't you think?\n\nExcept for Wi-Fi, HD-Video, VR, AR, AC, DC, transcontinental air travel, modern medicine, toasters.\n(Relation +)",
             "Did you hear, they've finally invented a secure IOT toaster.\nWell, it is big news to me at least!\n(Relation +)",
             "What is on the other side of the pond? I need to know!\n\nWhat do you mean, \"go there\". I can't leave my toaster unguarded!\n(Relation +)",
-            "Nothing beats the smell of Toasty Toast™ in the morning, the number one brand all across the known world.\n\nYes they pay me to say that.\n(Relation +)"
+            "Nothing beats the smell of Toasty Toast™ in the morning, the number one brand all across the known world.\n\nYes, they pay me to say that.\n(Relation +)"
             );
         otherCharacter.ChangeRelation(1);
         buttonPanel.gameObject.SetActive(false);
@@ -500,6 +497,18 @@ public class DiscussionController : MonoBehaviour
 
     public void OnContinueButtonPressed()
     {
+        //instant text animation
+        if (playerPanel.animationOn)
+        {
+            playerPanel.ShowTextNow();
+            return;
+        }
+        if (otherPanel.animationOn)
+        {
+            otherPanel.ShowTextNow();
+            return;
+        }
+
         if (introHack)
         {
             DiscussionEnd();
@@ -535,7 +544,9 @@ public class DiscussionController : MonoBehaviour
                 if (otherCharacter.relationToPlayer >= 3)
                     OtherTalk("Hi!", "Hello!", "Huldo!");
                 else
-                    OtherTalk("Oh, it is you again...", "Well well, isn't it my least favorite duck.", "Speak.");
+                    OtherTalk("Oh, it is you again...",
+                        "Well, well. Isn't it my least favorite duck.",
+                        "Speak.");
 
             }
         }
