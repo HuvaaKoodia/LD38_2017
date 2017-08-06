@@ -13,7 +13,7 @@ public class CharacterStatsPanel : MonoBehaviour
     {
         MainController.I.onCharacterSelected += OpenPanel;
         MainController.I.onCharacterDeselected += ClosePanel;
-        MainController.I.onGameOver += OnGameover;
+        MainController.I.onEnd += OnEnd;
         MainController.I.onDayEnd += OnDayEnd;
 
         panel.SetActive(false);
@@ -24,7 +24,7 @@ public class CharacterStatsPanel : MonoBehaviour
         ClosePanel(null);
     }
 
-    private void OnGameover()
+    private void OnEnd()
     {
         ClosePanel(null);
     }

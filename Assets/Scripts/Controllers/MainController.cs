@@ -5,12 +5,7 @@ using System.Linq;
 using UnityEngine;
 
 public delegate void EventEvent(Event e);//LAL!
-
-/*public enum EventType
-{
-    party,
-    meeting
-}*/
+public delegate void EventsEvent(List<Event> events);//LEL!
 
 [Serializable]
 public class Event
@@ -19,9 +14,7 @@ public class Event
     public string discussionDescription = "";
     public string playerDiscussionDescription = "";
     public int day;
-    //public EventType eventType { get; set; }
     public CharacterView invitedBy { get; set; }
-
     public AudioSource audiosource;
     public List<CharacterView> participants;
 
@@ -71,16 +64,19 @@ public class MainController : MonoBehaviour
     public CharacterView selectedCharacter { get; private set; }
     public event CharacterEvent onCharacterSelected, onCharacterDeselected;
     public event EventEvent onKnownEventAdded, onKnownEventRemoved;
-    public event Delegates.Action onGameOver, onActionUsed, onDayStart, onDayEnd, onBeforeFirstDay;
+    public event Delegates.Action onEnd, onActionUsed, onDayStart, onDayEnd, onShowIntro, onIntroStart, onFirstDayStart;
     public int daysLeft = 10;
     public int day { get; private set; }
     public void SetOnTour() {
         onTour = true;
     }
+    public Color[] lineColors;
+    public EventsEvent onResolveEvents;
 
     public bool onTour { get; private set; }
     public bool GameOver { get { return gameOver; } }
 
+    public GameObject menuPanel;
     public int actionPointsPerDay = 3;
     public List<Event> meetings, parties;
     public List<Event> knownEvents { get; private set; }
@@ -94,8 +90,6 @@ public class MainController : MonoBehaviour
 
         actionPoints = actionPointsPerDay;
         knownEvents = new List<Event>();
-        //meetings.ForEach(e => e.eventType = EventType.meeting);
-        //parties.ForEach(e => e.eventType = EventType.party);
         meetings.Sort((x, y) => x.day - y.day);
         parties.Sort((x, y) => x.day - y.day);
         day = 1;
@@ -109,31 +103,31 @@ public class MainController : MonoBehaviour
             otherCharacters.Add(character);
         }
         otherCharacters.Remove(playerCharacter);
-
-    }
-
-    public void ReduceActionPoints(int value)
-    {
-        actionPoints -= value;
-        if (onActionUsed != null) onActionUsed();
-        UpdateAllLines();
     }
 
     private IEnumerator Start()
     {
-
         disableInput = true;
         yield return null;
 
-        onBeforeFirstDay();
+        //intro setup
+        playerCharacter.SetState(DuckState.StarStruck);
+        menuPanel.SetActive(true);
+        DiscussionController.I.MovePlayerToTitlePosition();
     }
-
-    public void StartFirstDay() {
-        onDayEnd();
-    }
-
+    bool menuOpen = true;
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (menuOpen)
+            {
+                Application.Quit();
+            }
+            else
+                Helpers.RestartLevel();
+        }
+
         if (gameOver || disableInput) return;
 
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -163,19 +157,28 @@ public class MainController : MonoBehaviour
 #endif
     }
 
-    private void SelectionInput(Vector3 screenPosition)
-    {
-        CharacterView character;
-        if (Helpers.ScreenPointToObject(screenPosition, out character, LayerMasks.Character))
-        {
-            DeselectCharacter();
+    #region public interface
 
-            selectedCharacter = character;
-            selectedCharacter.SetSelected(true);
-            onCharacterSelected(selectedCharacter);
-        }
-        else
-            DeselectCharacter();
+    public void ShowIntro()
+    {
+        menuOpen = false;
+        onIntroStart();
+        menuPanel.SetActive(false);
+
+        onShowIntro();
+    }
+
+    public void StartFirstDay()
+    {
+        onFirstDayStart();
+        onDayEnd();
+    }
+
+    public void ReduceActionPoints(int value)
+    {
+        actionPoints -= value;
+        if (onActionUsed != null) onActionUsed();
+        UpdateAllLines();
     }
 
     public void DeselectCharacter()
@@ -187,8 +190,6 @@ public class MainController : MonoBehaviour
         }
     }
 
-    #region public interface
-    
     public void AddKnownEvent(Event meeting)
     {
         knownEvents.Add(meeting);
@@ -240,8 +241,6 @@ public class MainController : MonoBehaviour
         //}
     }
 
-    public Color[] lineColors;
-
     public void UpdateAllLines() {
         foreach (var character in otherCharacters)
         {
@@ -249,14 +248,12 @@ public class MainController : MonoBehaviour
         }
     }
 
-    public EventsEvent onResolveEvents;
-
     public bool CheckDayEnd()
     {
         if (onTour)
         {
             gameOver = true;
-            onGameOver();
+            onEnd();
             return true;
         }
 
@@ -275,7 +272,7 @@ public class MainController : MonoBehaviour
             if (daysLeft == 0)
             {
                 gameOver = true;
-                onGameOver();
+                onEnd();
                 return true;
             }
 
@@ -294,6 +291,21 @@ public class MainController : MonoBehaviour
     }
     #endregion
     #region private interface
+
+    private void SelectionInput(Vector3 screenPosition)
+    {
+        CharacterView character;
+        if (Helpers.ScreenPointToObject(screenPosition, out character, LayerMasks.Character))
+        {
+            DeselectCharacter();
+
+            selectedCharacter = character;
+            selectedCharacter.SetSelected(true);
+            onCharacterSelected(selectedCharacter);
+        }
+        else
+            DeselectCharacter();
+    }
 
     private void UpdateWeeklySchedules()
     {
@@ -345,6 +357,10 @@ public class MainController : MonoBehaviour
     }
 
     #endregion
+
+    public void OnStartButtonPressed()
+    {
+
+    }
 }
 
-public delegate void EventsEvent(List<Event> events);

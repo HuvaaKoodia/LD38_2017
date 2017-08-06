@@ -109,7 +109,6 @@ public class CharacterView : MonoBehaviour
             line.Draw3D();
             allLinesHack.Add(line);
 
-
             //setup lineView
             var lineView = line.rectTransform.gameObject.AddComponent<LineView>();
             lineView.node1 = this;
@@ -119,11 +118,6 @@ public class CharacterView : MonoBehaviour
             //add to lines
             lines.Add(lineView);
             linesTable.Add(connection, lineView);
-
-            //connect to other node automatically so the line isn't created a new.
-            //if (!connection.connections.Contains(this)) {
-            //   connection.connections.Add(this);
-            //}
 
             connection.lines.Add(lineView);
             connection.linesTable.Add(this, lineView);
@@ -166,6 +160,16 @@ public class CharacterView : MonoBehaviour
             bodyJitter.enabled = true;
             eyeRotators[0].enabled = true;
             eyeRotators[1].enabled = true;
+        }
+        if (oldState == DuckState.StarStruck)
+        {
+            animator.SetBool("OpenBeak", false);
+            bodyJitter.enabled = false;
+            eyeRotators[0].enabled = false;
+            eyeRotators[1].enabled = false;
+
+            eyeRotators[0].ResetRotation();
+            eyeRotators[1].ResetRotation();
         }
 
         oldState = state;

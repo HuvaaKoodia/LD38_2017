@@ -9,7 +9,7 @@ public class DiscussionController : MonoBehaviour
     public DiscussionButton buttonPrefab;
     public GameObject buttonPanel;
     public Transform buttonsParent;
-    public Transform playerPosition, otherPosition, playerEndPosition;
+    public Transform playerPosition, otherPosition, playerEndPosition, playerTitlePosition;
     public Delegates.Action onDiscussionStart, onDiscussionEnd, onEventChoiceButtons, onEventChosen;
     public DialogPanel playerPanel, otherPanel;
     public Button continueButton, waitButton, restartButton;
@@ -20,6 +20,7 @@ public class DiscussionController : MonoBehaviour
     int indexDiscussion = 0;
     List<Event> events;
     private CoroutineManager playerMoverCM, otherMoverCM;
+    public CharacterView playerCharacter, otherCharacter; //quick public hack
 
     private void Awake()
     {
@@ -40,18 +41,20 @@ public class DiscussionController : MonoBehaviour
         waitButton.onClick.AddListener(onWaitButtonPressed);
         restartButton.onClick.AddListener(Helpers.RestartLevel);
 
-        MainController.I.onBeforeFirstDay += ShowIntroDialog;
+        MainController.I.onShowIntro += ShowIntroDialog;
         MainController.I.onDayStart += CheckWaitButton;
         MainController.I.onDayEnd += OnDayEnd;
         MainController.I.onActionUsed += CheckWaitButton;
-        MainController.I.onResolveEvents += onResolveEvents;
-        MainController.I.onGameOver += OnGameOver;
+        MainController.I.onResolveEvents += OnResolveEvents;
+        MainController.I.onEnd += OnEnd;
 
         playerCharacter = MainController.I.playerCharacter;
     }
     bool introHack = true;
+
     private void ShowIntroDialog()
     {
+        playerCharacter.SetState(DuckState.Normal);
         onDiscussionStart();
         continueButton.gameObject.SetActive(true);
         MovePlayerToDiscussionPosition();
@@ -59,7 +62,7 @@ public class DiscussionController : MonoBehaviour
 
     }
 
-    private void OnGameOver()
+    private void OnEnd()
     {
         if (MainController.I.onTour)
         {
@@ -81,7 +84,7 @@ public class DiscussionController : MonoBehaviour
 
     bool eventHack = false;
 
-    private void onResolveEvents(List<Event> events)
+    private void OnResolveEvents(List<Event> events)
     {
         if (events.Count > 1)
         {
@@ -149,8 +152,6 @@ public class DiscussionController : MonoBehaviour
     {
         int day = MainController.I.day;
 
-
-
         playerCharacter = MainController.I.playerCharacter;
         otherCharacter = MainController.I.selectedCharacter;
 
@@ -208,20 +209,10 @@ public class DiscussionController : MonoBehaviour
         }
     }
 
-    public void VisitSelectedCharacter()
-    {
-
-    }
-
-    public void MessageSelectedCharacter()
-    {
-
-    }
     #endregion
 
     #region private interface
 
-    public CharacterView playerCharacter, otherCharacter;
     private void MoveCharactersToDiscussionPositions()
     {
         MovePlayerToDiscussionPosition();
@@ -235,13 +226,17 @@ public class DiscussionController : MonoBehaviour
         MoveOtherToNormalPosition();
     }
 
-    private void MovePlayerToDiscussionPosition()
+    public void MovePlayerToDiscussionPosition()
     {
         playerMoverCM.Start(MoveCharacterToPositionCoroutine(playerCharacter, playerPosition));
     }
 
+    public void MovePlayerToTitlePosition()
+    {
+        playerMoverCM.Start(MoveCharacterToPositionCoroutine(playerCharacter, playerTitlePosition));
+    }
 
-    private void MovePlayerToEndPosition()
+    public void MovePlayerToEndPosition()
     {
         playerMoverCM.Start(MoveCharacterToPositionCoroutine(playerCharacter, playerEndPosition));
     }
@@ -526,7 +521,7 @@ public class DiscussionController : MonoBehaviour
             {
                 OtherHideDialogue();
                 MoveOtherToNormalPosition();
-                onResolveEvents(events);
+                OnResolveEvents(events);
                 return;
             }
 
