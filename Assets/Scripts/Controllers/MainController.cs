@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public delegate void EventEvent(Event e);//LAL!
-public delegate void EventsEvent(List<Event> events);//LEL!
+public delegate void EventEvent(Event e); //LAL!
+public delegate void EventsEvent(List<Event> events); //LEL!
 
 [Serializable]
 public class Event
@@ -43,14 +43,14 @@ public class Event
     public string GetDescription()
     {
         var description = discussionDescription;
-        if (description == "") description = Name;
+        if (description == "")description = Name;
         return description.Trim();
     }
 
     public string GetPlayerDescription()
     {
         var description = playerDiscussionDescription;
-        if (description == "") description = Name;
+        if (description == "")description = Name;
         return description.Trim();
     }
 }
@@ -67,7 +67,8 @@ public class MainController : MonoBehaviour
     public event Delegates.Action onEnd, onActionUsed, onDayStart, onDayEnd, onShowIntro, onIntroStart, onFirstDayStart;
     public int daysLeft = 10;
     public int day { get; private set; }
-    public void SetOnTour() {
+    public void SetOnTour()
+    {
         onTour = true;
     }
     public Color[] lineColors;
@@ -90,8 +91,8 @@ public class MainController : MonoBehaviour
 
         actionPoints = actionPointsPerDay;
         knownEvents = new List<Event>();
-        meetings.Sort((x, y) => x.day - y.day);
-        parties.Sort((x, y) => x.day - y.day);
+        meetings.Sort((x, y)=> x.day - y.day);
+        parties.Sort((x, y)=> x.day - y.day);
         day = 1;
         onTour = false;
 
@@ -128,7 +129,7 @@ public class MainController : MonoBehaviour
                 Helpers.RestartLevel();
         }
 
-        if (gameOver || disableInput) return;
+        if (gameOver || disableInput)return;
 
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (Input.touchCount > 0)
@@ -143,7 +144,7 @@ public class MainController : MonoBehaviour
             }
         }
 #else
-        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;//mouse over GUI element
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())return; //mouse over GUI element
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
@@ -177,7 +178,7 @@ public class MainController : MonoBehaviour
     public void ReduceActionPoints(int value)
     {
         actionPoints -= value;
-        if (onActionUsed != null) onActionUsed();
+        if (onActionUsed != null)onActionUsed();
         UpdateAllLines();
     }
 
@@ -198,16 +199,16 @@ public class MainController : MonoBehaviour
 
     public Event FindMeeting(CharacterView character, CharacterView character2)
     {
-        var ev = meetings.Where(e => !knownEvents.Contains(e) && e.participants.Contains(character) && e.participants.Contains(character2));
-        if (ev.Count() > 0)
+        var ev = meetings.Where(e => !knownEvents.Contains(e)&& e.participants.Contains(character)&& e.participants.Contains(character2));
+        if (ev.Count()> 0)
             return ev.First();
         return null;
     }
 
     public Event FindParty(CharacterView character)
     {
-        var ev = parties.Where(e => !knownEvents.Contains(e) && e.participants.Contains(character));
-        if (ev.Count() > 0)
+        var ev = parties.Where(e => !knownEvents.Contains(e)&& e.participants.Contains(character));
+        if (ev.Count()> 0)
             return ev.First();
         return null;
     }
@@ -216,32 +217,28 @@ public class MainController : MonoBehaviour
     {
         actionPoints = actionPointsPerDay;
 
-        if ((day - 1) % 7 == 0)
+        if ((day - 1)% 7 == 0)
             UpdateWeeklySchedules();
 
-        
-            var events = new List<Event>();
-            for (int i = 0; i < knownEvents.Count; i++)
-            {
-                var e = knownEvents[i];
-                if (e.day > day) continue;
-                events.Add(e);
-            }
-            if (events.Count > 0)
-                onResolveEvents(events);
-        
+        var events = new List<Event>();
+        for (int i = 0; i < knownEvents.Count; i++)
+        {
+            var e = knownEvents[i];
+            if (e.day > day)continue;
+            events.Add(e);
+        }
+        if (events.Count > 0)
+            onResolveEvents(events);
+
         if (events.Count == 0)
             RemoveDailyEvents();
 
-
-        //if (!CheckDayEnd())
-        //{
         disableInput = false;
-            if (onDayStart != null) onDayStart();
-        //}
+        if (onDayStart != null)onDayStart();
     }
 
-    public void UpdateAllLines() {
+    public void UpdateAllLines()
+    {
         foreach (var character in otherCharacters)
         {
             character.UpdateLineColours();
@@ -287,7 +284,7 @@ public class MainController : MonoBehaviour
 
     public static string GetDayName(int day)
     {
-        return dayNames[(day - 1) % 7];
+        return dayNames[(day - 1)% 7];
     }
     #endregion
     #region private interface
@@ -314,36 +311,20 @@ public class MainController : MonoBehaviour
         {
             otherCharacters[i].schedule = new bool[7];
         }
-
-        //set events
-        /*var events = parties;
-        for (int i = 0; i < otherCharacters.Count; i++)
-        {
-            foreach (var e in events)
-            {
-                if (e.participants.Contains(otherCharacters[i])){
-                    otherCharacters[i].SetSchedule(e.day, true);
-                    break;
-                }
-            }
-        }*/
     }
-
 
     public void RemoveDailyEvents()
     {
-        //remove used up events
         RemoveEvents(meetings);
         RemoveEvents(parties);
     }
-
 
     private void RemoveEvents(List<Event> events)
     {
         for (int i = 0; i < events.Count(); i++)
         {
             var e = events[i];
-            if (e.day > day) break;
+            if (e.day > day)break;
 
             if (knownEvents.Contains(e))
             {
@@ -357,10 +338,4 @@ public class MainController : MonoBehaviour
     }
 
     #endregion
-
-    public void OnStartButtonPressed()
-    {
-
-    }
 }
-

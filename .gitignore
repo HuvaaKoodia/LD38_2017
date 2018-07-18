@@ -30,3 +30,7 @@ sysinfo.txt
 *.unitypackage
 Assets/Vectrosity/Vectrosity Documentation/
 Assets/Vectrosity/Vectrosity Documentation.meta
+
+.vscode/
+Assets/VSCode/
+Assets/VSCode.meta

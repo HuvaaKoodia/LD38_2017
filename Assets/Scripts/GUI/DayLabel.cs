@@ -17,7 +17,6 @@ public class DayLabel : MonoBehaviour
     {
         panel.SetActive(true);
         text.text = "Day " + MainController.I.day; 
-        AudioController.I.PlayAudio(AudioController.I.nextDaySource);
     }
 
     public void OnPressed()

@@ -58,7 +58,7 @@ public class DiscussionController : MonoBehaviour
         onDiscussionStart();
         continueButton.gameObject.SetActive(true);
         MovePlayerToDiscussionPosition();
-        PlayerTalk("Hey you, I need help with a thing.\n\nAll my life I've wanted to be famous and done nothing about it. Now a world famed celebrity is starting a world tour in just 7 days; it's a ticket to the top.\n\nYou find a way for me to talk to them and I'll do the rest, ok?");
+        PlayerTalk("Hey you, I need help with a thing.\n\nAll my life I've wanted to be famous and done nothing about it. Now a world famed celebrity is starting a world tour in just 7 days; it's a ticket to the top!\n\nYou find a way for me to talk to them and I'll do the rest, ok?");
 
     }
 

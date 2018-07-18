@@ -22,25 +22,14 @@ public class AudioController : MonoBehaviour {
     public AudioSource messageSource;
     public AudioSource victorySource;
     public AudioSource lifeOverSource;
-    public AudioSource waterAmbientSource;
-    public AudioSource nextDaySource;
-    public AudioSource begingSource;
+    
     private void Awake() {
         I = this;
     }
+    
     public void PlayAudio(AudioSource audio) {
         if (audio != null) {
             audio.Play();
         }
     }
- 
-    //Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 }
